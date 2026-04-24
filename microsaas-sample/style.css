@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Georgia, serif;
+    background: radial-gradient(circle at top, #f9dcc0, #f7f3ec 58%, #ece2d1);
+    color: #261d16;
+}
+
+.app {
+    width: min(900px, calc(100vw - 32px));
+    margin: 0 auto;
+    padding: 40px 0 80px;
+    display: grid;
+    gap: 20px;
+}
+
+.hero,
+.card {
+    background: rgba(255, 255, 255, .88);
+    border: 1px solid #dbcab3;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(64, 34, 17, .08);
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: #a14433;
+    font-size: 12px;
+}
+
+button {
+    border: none;
+    background: #221915;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 14px;
+    cursor: pointer;
+}
+
+pre {
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: #f8f1e7;
+    padding: 16px;
+    border-radius: 16px;
+}
