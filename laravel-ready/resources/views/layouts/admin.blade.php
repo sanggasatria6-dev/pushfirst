@@ -6,31 +6,32 @@
     <title>{{ $title ?? 'Admin Portal' }}</title>
     <style>
         :root {
-            --bg: #f4efe8;
-            --sidebar: #1d2a24;
-            --sidebar-soft: #27362f;
-            --surface: rgba(255, 252, 248, 0.88);
-            --surface-strong: #fffdfa;
-            --line: rgba(97, 70, 50, 0.14);
-            --line-strong: rgba(97, 70, 50, 0.24);
-            --text: #231712;
-            --muted: #6f5b4f;
-            --accent: #25573f;
-            --accent-strong: #1b4331;
-            --accent-soft: #e2efe7;
-            --warm: #a85e2d;
-            --danger: #8f4730;
-            --success: #1d6b47;
-            --shadow: 0 24px 60px rgba(42, 24, 15, 0.08);
+            --bg: #efe3d4;
+            --sidebar: #2a2f21;
+            --sidebar-soft: #353d2b;
+            --surface: rgba(250, 244, 236, 0.9);
+            --surface-strong: #fff9f1;
+            --line: rgba(101, 73, 48, 0.15);
+            --line-strong: rgba(101, 73, 48, 0.26);
+            --text: #24170e;
+            --muted: #6d594a;
+            --accent: #4d683b;
+            --accent-strong: #36492c;
+            --accent-soft: #e5ebd7;
+            --warm: #aa6236;
+            --danger: #8e4a31;
+            --success: #40613b;
+            --shadow: 0 26px 70px rgba(59, 34, 18, 0.1);
         }
         * { box-sizing: border-box; }
         body {
             margin: 0;
             color: var(--text);
-            font-family: Georgia, "Times New Roman", serif;
+            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
             background:
-                radial-gradient(circle at top right, rgba(37, 87, 63, 0.08), transparent 20%),
-                linear-gradient(180deg, #fbf6f0 0%, var(--bg) 100%);
+                radial-gradient(circle at top right, rgba(77, 104, 59, 0.1), transparent 22%),
+                radial-gradient(circle at top left, rgba(170, 98, 54, 0.08), transparent 18%),
+                linear-gradient(180deg, #faf1e5 0%, var(--bg) 100%);
         }
         a { color: inherit; text-decoration: none; }
         .shell {
@@ -43,7 +44,7 @@
             color: #f5efe8;
             background:
                 linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)),
-                linear-gradient(180deg, var(--sidebar), #18221d);
+                linear-gradient(180deg, var(--sidebar), #21261b);
             border-right: 1px solid rgba(255,255,255,.06);
         }
         .brand {
@@ -90,7 +91,7 @@
         .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         .stat {
             padding: 22px;
-            background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(248, 239, 229, .72));
+            background: linear-gradient(145deg, rgba(255, 250, 243, 0.9), rgba(239, 229, 214, 0.76));
         }
         .stat strong {
             display: block;
@@ -103,7 +104,7 @@
             width: fit-content;
             padding: 8px 12px;
             border-radius: 999px;
-            background: var(--accent-soft);
+            background: linear-gradient(135deg, var(--accent-soft), #efe3ce);
             color: var(--accent-strong);
             font-size: 12px;
             font-weight: 700;
@@ -123,7 +124,7 @@
             padding: 12px 14px;
             border-radius: 14px;
             border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 250, 243, 0.82);
             color: inherit;
             font: inherit;
         }
@@ -132,7 +133,7 @@
             cursor: pointer;
             border: none;
             color: #fff;
-            background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+            background: linear-gradient(135deg, var(--accent-strong), var(--accent), #647f4f);
         }
         button.alt {
             background: rgba(255,255,255,.9);
@@ -173,7 +174,7 @@
         .card-note {
             padding: 16px;
             border-radius: 18px;
-            background: rgba(255,255,255,.58);
+            background: rgba(255, 248, 239, 0.66);
             border: 1px dashed var(--line-strong);
         }
         @media (max-width: 1040px) {

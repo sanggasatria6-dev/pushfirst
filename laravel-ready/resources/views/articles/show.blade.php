@@ -7,32 +7,34 @@
     <meta name="description" content="{{ $article->meta_description }}">
     <style>
         :root {
-            --bg: #f6f1ea;
-            --surface: rgba(255, 252, 248, 0.9);
-            --surface-strong: #fffdfa;
-            --line: rgba(105, 80, 61, 0.16);
-            --text: #261812;
-            --muted: #6f5a4e;
-            --accent: #25573f;
-            --accent-soft: #e5efe8;
-            --shadow: 0 24px 60px rgba(46, 28, 18, 0.08);
+            --bg: #f2e7d9;
+            --surface: rgba(252, 247, 240, 0.92);
+            --surface-strong: #fffaf3;
+            --line: rgba(107, 79, 56, 0.18);
+            --text: #26180f;
+            --muted: #6d594a;
+            --accent: #49653a;
+            --accent-soft: #e8eddc;
+            --warm: #a76337;
+            --shadow: 0 26px 70px rgba(58, 35, 18, 0.1);
         }
         * { box-sizing: border-box; }
         body {
             margin: 0;
             color: var(--text);
-            font-family: Georgia, "Times New Roman", serif;
+            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
             background:
-                radial-gradient(circle at top right, rgba(37, 87, 63, 0.12), transparent 20%),
-                radial-gradient(circle at top left, rgba(196, 136, 82, 0.12), transparent 18%),
-                linear-gradient(180deg, #fbf7f1 0%, var(--bg) 100%);
+                radial-gradient(circle at top right, rgba(73, 101, 58, 0.16), transparent 22%),
+                radial-gradient(circle at top left, rgba(167, 99, 55, 0.14), transparent 20%),
+                linear-gradient(180deg, #fbf3e8 0%, var(--bg) 100%);
         }
         .page { width: min(920px, calc(100vw - 28px)); margin: 0 auto; padding: 28px 0 64px; }
         .article-shell {
             padding: 30px;
             border-radius: 32px;
             border: 1px solid var(--line);
-            background: var(--surface);
+            background:
+                linear-gradient(180deg, rgba(255, 251, 245, 0.96), rgba(247, 238, 226, 0.88));
             box-shadow: var(--shadow);
             backdrop-filter: blur(12px);
         }
@@ -40,7 +42,7 @@
             display: inline-flex;
             padding: 7px 12px;
             border-radius: 999px;
-            background: var(--accent-soft);
+            background: linear-gradient(135deg, var(--accent-soft), #efe4d1);
             color: var(--accent);
             font-size: 12px;
             font-weight: 700;
@@ -74,6 +76,8 @@
         }
         .content h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
         .content h3 { font-size: clamp(1.2rem, 2.4vw, 1.55rem); }
+        .content h2 { color: #2f4428; }
+        .content h3 { color: #8d542f; }
         .content p, .content li {
             font-size: 1.08rem;
             line-height: 1.9;
@@ -85,6 +89,10 @@
             display: inline-flex;
             margin-bottom: 18px;
             color: var(--muted);
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 249, 242, 0.8);
+            border: 1px solid var(--line);
         }
         @media (max-width: 720px) {
             .article-shell { padding: 22px; border-radius: 24px; }

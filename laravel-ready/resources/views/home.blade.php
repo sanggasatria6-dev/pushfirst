@@ -6,30 +6,31 @@
     <title>{{ config('app.name', 'SerbaInfo') }}</title>
     <style>
         :root {
-            --bg: #f4efe8;
-            --surface: rgba(255, 251, 247, 0.86);
-            --surface-strong: #fffdf9;
-            --line: rgba(100, 71, 50, 0.14);
-            --line-strong: rgba(100, 71, 50, 0.24);
-            --text: #231711;
-            --muted: #6d5b50;
-            --accent: #2b6a4d;
-            --accent-strong: #1f4d39;
-            --accent-soft: #e5f0e8;
-            --warm: #b86a32;
-            --warm-soft: #faefe1;
-            --shadow: 0 28px 80px rgba(51, 31, 18, 0.09);
+            --bg: #efe5d8;
+            --surface: rgba(251, 246, 239, 0.86);
+            --surface-strong: #fffaf3;
+            --line: rgba(103, 74, 49, 0.16);
+            --line-strong: rgba(103, 74, 49, 0.28);
+            --text: #24170f;
+            --muted: #6b584a;
+            --accent: #4f6b3c;
+            --accent-strong: #32482a;
+            --accent-soft: #e6ecd8;
+            --warm: #b16a3b;
+            --warm-deep: #8f4e2d;
+            --warm-soft: #f7e5d4;
+            --shadow: 0 30px 80px rgba(62, 38, 19, 0.12);
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body {
             margin: 0;
             color: var(--text);
-            font-family: Georgia, "Times New Roman", serif;
+            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
             background:
-                radial-gradient(circle at top left, rgba(184, 106, 50, 0.14), transparent 28%),
-                radial-gradient(circle at top right, rgba(43, 106, 77, 0.14), transparent 22%),
-                linear-gradient(180deg, #fbf6f0 0%, var(--bg) 100%);
+                radial-gradient(circle at top left, rgba(177, 106, 59, 0.16), transparent 30%),
+                radial-gradient(circle at top right, rgba(79, 107, 60, 0.16), transparent 24%),
+                linear-gradient(180deg, #f8f0e6 0%, var(--bg) 100%);
         }
         a { color: inherit; text-decoration: none; }
         .page { width: min(1200px, calc(100vw - 32px)); margin: 0 auto; padding: 24px 0 72px; }
@@ -67,7 +68,7 @@
             padding: 10px 14px;
             border-radius: 999px;
             border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.55);
+            background: rgba(255, 250, 244, 0.72);
         }
         .hero {
             display: grid;
@@ -87,7 +88,7 @@
             overflow: hidden;
             padding: 34px;
             background:
-                linear-gradient(145deg, rgba(255, 254, 252, 0.97), rgba(247, 238, 226, 0.9));
+                linear-gradient(145deg, rgba(255, 250, 244, 0.97), rgba(242, 230, 214, 0.92));
         }
         .hero-main::after {
             content: "";
@@ -96,7 +97,18 @@
             width: 220px;
             height: 220px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(43, 106, 77, 0.18), transparent 68%);
+            background: radial-gradient(circle, rgba(79, 107, 60, 0.22), transparent 68%);
+        }
+        .hero-main::before {
+            content: "";
+            position: absolute;
+            inset: 18px 18px auto auto;
+            width: 110px;
+            height: 110px;
+            border-radius: 28px;
+            border: 1px solid rgba(177, 106, 59, 0.14);
+            background: linear-gradient(145deg, rgba(255,255,255,.38), rgba(255,255,255,0));
+            transform: rotate(14deg);
         }
         .eyebrow {
             display: inline-flex;
@@ -105,7 +117,7 @@
             padding: 8px 12px;
             border-radius: 999px;
             background: var(--warm-soft);
-            color: var(--warm);
+            color: var(--warm-deep);
             font-size: 12px;
             font-weight: 700;
             letter-spacing: .12em;
@@ -132,8 +144,8 @@
         .metric {
             padding: 16px;
             border-radius: 20px;
-            background: rgba(255, 255, 255, 0.66);
-            border: 1px solid rgba(100, 71, 50, 0.1);
+            background: linear-gradient(145deg, rgba(255, 250, 244, 0.88), rgba(245, 236, 225, 0.64));
+            border: 1px solid rgba(103, 74, 49, 0.12);
         }
         .metric strong {
             display: block;
@@ -158,12 +170,12 @@
         .btn:hover { transform: translateY(-2px); }
         .btn-primary {
             color: #fff;
-            background: linear-gradient(135deg, var(--accent-strong), var(--accent));
-            box-shadow: 0 16px 36px rgba(31, 77, 57, 0.24);
+            background: linear-gradient(135deg, var(--accent-strong), var(--accent), #6d8759);
+            box-shadow: 0 16px 36px rgba(50, 72, 42, 0.28);
         }
         .btn-secondary {
             border: 1px solid var(--line-strong);
-            background: rgba(255, 255, 255, 0.68);
+            background: rgba(255, 250, 244, 0.76);
             color: var(--text);
         }
         .hero-side {
@@ -172,7 +184,7 @@
             gap: 14px;
             align-content: start;
             background:
-                linear-gradient(180deg, rgba(255, 252, 248, 0.92), rgba(246, 239, 231, 0.86));
+                linear-gradient(180deg, rgba(255, 249, 242, 0.94), rgba(239, 229, 216, 0.9));
         }
         .banner-card {
             display: grid;
@@ -216,15 +228,15 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            background: rgba(255, 255, 255, 0.7);
+            background: linear-gradient(180deg, rgba(255, 251, 246, 0.78), rgba(245, 235, 222, 0.68));
         }
         .tag {
             display: inline-flex;
             width: fit-content;
             padding: 8px 12px;
             border-radius: 999px;
-            background: var(--accent-soft);
-            color: var(--accent-strong);
+            background: linear-gradient(135deg, var(--accent-soft), #f0e7d0);
+            color: #39522f;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: .06em;
@@ -251,7 +263,7 @@
             border: 1px dashed var(--line-strong);
             border-radius: 24px;
             color: var(--muted);
-            background: rgba(255, 255, 255, 0.42);
+            background: rgba(255, 248, 240, 0.52);
         }
         @media (max-width: 980px) {
             .hero, .micro-grid, .article-grid, .hero-meta { grid-template-columns: 1fr; }
