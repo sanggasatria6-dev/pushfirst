@@ -158,10 +158,139 @@ Panduan praktis ada di:
 
 ## 11. Fokus tema artikel
 
-Starter ini sekarang dibatasi ke 3 kategori topik:
+Starter ini sekarang dibatasi ke 3 tema:
 
-- `buyer_guides`
-- `iot`
+- `urban_farming`
 - `informatics_learning`
+- `business_growth`
 
-Generator harian akan mengambil topik aktif dari kategori itu saja, lalu mengirim 5-7 job artikel per hari secara acak.
+Generator harian akan mengambil topik aktif dari tema itu saja. Keyword utama dipilih otomatis dari pool keyword sesuai tema, lalu diputar lagi saat proses generate berikutnya.
+
+## 12. Deploy manual yang benar
+
+Untuk update live di VPS tanpa workflow otomatis, jalankan:
+
+```bash
+cd ~/project_SEO_Pabrik
+git fetch origin
+git reset --hard origin/main
+bash ~/project_SEO_Pabrik/scripts/deploy-vps.sh ~/project_SEO_Pabrik /var/www/serbainfo.com php8.3-fpm
+```
+
+Catatan:
+
+- `install-into-laravel.sh` sekarang punya 2 mode.
+- Mode default tetap aman untuk setup awal karena tidak menimpa file target lama.
+- Untuk deploy update live, gunakan `--overwrite` atau langsung pakai `deploy-vps.sh`.
+
+## 13. Deploy otomatis dari GitHub Actions
+
+Repo ini sudah disiapkan dengan workflow:
+
+- `.github/workflows/deploy.yml`
+
+Workflow itu akan jalan setiap ada push ke branch `main`, lalu SSH ke VPS dan menjalankan deploy otomatis.
+
+### Secret GitHub yang harus Anda isi
+
+Masuk ke:
+
+- GitHub repository
+- `Settings`
+- `Secrets and variables`
+- `Actions`
+
+Tambahkan secret berikut:
+
+- `VPS_HOST`
+  Isi contoh: `serbainfo.com` atau IP VPS Anda
+- `VPS_USER`
+  Isi contoh: `deploy`
+- `VPS_SSH_KEY`
+  Isi private key SSH yang dipakai GitHub Actions untuk login ke VPS
+- `VPS_REPO_DIR`
+  Isi contoh: `/home/deploy/project_SEO_Pabrik`
+- `VPS_APP_DIR`
+  Isi contoh: `/var/www/serbainfo.com`
+- `VPS_PHP_FPM_SERVICE`
+  Isi contoh: `php8.3-fpm`
+
+### Cara membuat SSH key khusus deploy
+
+Di lokal Anda:
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_actions_deploy
+```
+
+Lalu:
+
+```bash
+cat ~/.ssh/github_actions_deploy.pub
+```
+
+Salin hasil public key itu ke VPS pada file:
+
+```bash
+~/.ssh/authorized_keys
+```
+
+Contoh:
+
+```bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+echo "PASTE_PUBLIC_KEY_DI_SINI" >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
+Setelah itu ambil private key:
+
+```bash
+cat ~/.ssh/github_actions_deploy
+```
+
+Salin seluruh isinya ke GitHub secret `VPS_SSH_KEY`.
+
+### Syarat sudo restart service
+
+Karena workflow akan menjalankan:
+
+```bash
+sudo systemctl restart php8.3-fpm
+```
+
+user deploy Anda harus bisa restart service itu tanpa prompt password. Tambahkan rule sudoers di VPS:
+
+```bash
+sudo visudo
+```
+
+Isi:
+
+```bash
+deploy ALL=NOPASSWD: /bin/systemctl restart php8.3-fpm
+```
+
+Kalau nama service PHP-FPM Anda berbeda, sesuaikan.
+
+### Setelah setup
+
+Berikutnya alurnya cukup:
+
+```bash
+git add .
+git commit -m "update portal"
+git push origin main
+```
+
+GitHub Actions akan:
+
+- SSH ke VPS
+- `git fetch` dan `git reset --hard origin/main`
+- salin `laravel-ready` ke app Laravel dengan mode overwrite
+- jalankan `php artisan migrate --force`
+- jalankan `php artisan optimize:clear`
+- restart PHP-FPM
+
+Kalau semua secret benar, perubahan akan langsung live setelah push selesai.
