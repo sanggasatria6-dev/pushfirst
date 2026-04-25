@@ -4,7 +4,7 @@
     </a>
     <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
         <div>
-            <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8d542f;font-weight:700;">Affiliate</div>
+            <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8d542f;font-weight:700;">Sponsor</div>
             <strong style="display:block;margin-top:4px;">{{ $banner->name }}</strong>
         </div>
         <a href="{{ $banner->target_url }}" target="_blank" rel="nofollow sponsored" style="display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border-radius:14px;background:linear-gradient(135deg, #36492c, #4d683b, #688252);color:#fff;text-decoration:none;font-weight:700;box-shadow:0 14px 28px rgba(54,73,44,.22);">

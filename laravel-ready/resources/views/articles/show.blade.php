@@ -101,14 +101,14 @@
 </head>
 <body>
     <div class="page">
-        <a href="{{ route('home') }}" class="back-link">Kembali ke home</a>
+        <a href="{{ route('home') }}" class="back-link">Kembali</a>
 
         @if ($headerBanner)
             @include('components.affiliate-banner', ['banner' => $headerBanner])
         @endif
 
         <article class="article-shell">
-            <span class="eyebrow">Artikel SEO</span>
+            <span class="eyebrow">Artikel</span>
             <h1>{{ $article->title }}</h1>
             <div class="meta">
                 <span>{{ optional($article->published_at)->format('d M Y') }}</span>

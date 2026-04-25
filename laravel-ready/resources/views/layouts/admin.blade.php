@@ -190,7 +190,7 @@
     <aside class="sidebar">
         <div class="brand">
             <strong>Mega Portal Studio</strong>
-            <span>Panel untuk produksi konten SEO, katalog Micro-SaaS, dan monetisasi affiliate.</span>
+            <span>Panel pengelolaan portal.</span>
         </div>
         <nav>
             <a href="{{ route('admin.dashboard') }}">Dashboard</a>
@@ -205,7 +205,7 @@
             <div>
                 <span class="pill">Admin Portal</span>
                 <h2>{{ $title ?? 'Admin Portal' }}</h2>
-                <div class="muted">{{ $subtitle ?? 'Kelola portal, SEO factory, dan upload Micro-SaaS' }}</div>
+                <div class="muted">{{ $subtitle ?? 'Pengelolaan portal' }}</div>
             </div>
             <form method="POST" action="{{ route('admin.logout') }}" style="width:auto;">
                 @csrf

@@ -1,4 +1,4 @@
-@extends('layouts.admin', ['title' => 'SEO Factory', 'subtitle' => 'Tema artikel, keyword otomatis, banner affiliate acak, dan workflow SEO yang lebih siap production.'])
+@extends('layouts.admin', ['title' => 'SEO Factory', 'subtitle' => 'Pengelolaan tema, artikel, dan banner affiliate.'])
 
 @php
     $themeLabels = collect($themes)->mapWithKeys(fn ($theme, $key) => [$key => $theme['label']]);
@@ -9,17 +9,17 @@
     <div class="stat">
         <span class="pill">Tema Aktif</span>
         <strong>{{ $topics->count() }}</strong>
-        <div class="muted">Setiap tema menyimpan keyword aktif terakhir yang akan diganti otomatis saat generate.</div>
+        <div class="muted">Tema aktif yang digunakan untuk produksi artikel.</div>
     </div>
     <div class="stat">
         <span class="pill">Banner</span>
         <strong>{{ $banners->where('is_active', true)->count() }}</strong>
-        <div class="muted">Placement yang sama akan memakai random pick, jadi `home_hero` tidak tampil dobel sekaligus.</div>
+        <div class="muted">Banner aktif yang tersedia untuk setiap placement.</div>
     </div>
     <div class="stat">
         <span class="pill">Artikel</span>
         <strong>{{ $articles->where('status', 'published')->count() }}</strong>
-        <div class="muted">Artikel terbaru yang siap dipreview, dirapikan, atau dihapus dari panel ini.</div>
+        <div class="muted">Artikel terbit yang tersedia pada portal.</div>
     </div>
 </section>
 
@@ -29,7 +29,7 @@
             <div>
                 <span class="pill">Tema SEO</span>
                 <h3 style="margin:10px 0 6px;">Tambah Tema Artikel</h3>
-                <p class="muted" style="margin:0;">Anda cukup pilih tema. Keyword utama dan intent akan dipilih otomatis dari pool tema saat artikel diproduksi.</p>
+                <p class="muted" style="margin:0;">Tema baru akan memakai keyword dan intent otomatis sesuai konfigurasi.</p>
             </div>
         </div>
         <form method="POST" action="{{ route('admin.seo.topics.store') }}" class="stack" style="margin-top:18px;">
@@ -41,8 +41,8 @@
                 @endforeach
             </select>
             <div class="card-note">
-                <strong>Keyword utama otomatis</strong>
-                <div class="muted" style="margin-top:6px;">Sistem akan memilih keyword yang relevan dari tema, lalu memutar keyword berikutnya saat generator berjalan supaya tidak perlu Anda isi manual tiap kali.</div>
+                <strong>Keyword otomatis</strong>
+                <div class="muted" style="margin-top:6px;">Keyword dipilih otomatis dari pool keyword tema.</div>
             </div>
             <label class="inline" style="justify-content:flex-start;">
                 <input style="width:auto;" type="checkbox" name="is_active" value="1" checked>
@@ -55,7 +55,7 @@
     <section class="panel">
         <span class="pill">Banner Affiliate</span>
         <h3 style="margin:10px 0 6px;">Tambah Banner</h3>
-        <p class="muted" style="margin:0;">CTA itu teks tombol ajakan klik, misalnya `Cek Promo` atau `Lihat Penawaran`. Opsional, karena sistem akan pakai fallback jika dikosongkan.</p>
+        <p class="muted" style="margin:0;">CTA bersifat opsional.</p>
         <form method="POST" action="{{ route('admin.seo.banners.store') }}" class="stack" style="margin-top:18px;">
             @csrf
             <input type="text" name="name" placeholder="Nama banner" required>
@@ -85,7 +85,7 @@
         <div>
             <span class="pill">Generator</span>
             <h3 style="margin:10px 0 6px;">Generate Artikel Sekarang</h3>
-            <p class="muted" style="margin:0;">Generator akan memilih tema aktif berdasarkan rotasi `last_generated_at`, lalu mengganti keyword utama secara otomatis sebelum artikel dibuat.</p>
+            <p class="muted" style="margin:0;">Artikel diproduksi dari tema aktif berdasarkan rotasi jadwal.</p>
         </div>
         <form method="POST" action="{{ route('admin.seo.generate') }}" style="width:auto;">
             @csrf
@@ -123,7 +123,7 @@
                                 </select>
                                 <div class="card-note">
                                     <strong>{{ $themeLabels[$topic->category] ?? $topic->category }}</strong>
-                                    <div class="muted" style="margin-top:6px;">{{ $themes[$topic->category]['description'] ?? 'Tema lama. Silakan sesuaikan ke tema baru.' }}</div>
+                                    <div class="muted" style="margin-top:6px;">{{ $themes[$topic->category]['description'] ?? 'Tema tersimpan.' }}</div>
                                 </div>
                                 <label class="inline" style="justify-content:flex-start;">
                                     <input style="width:auto;" type="checkbox" name="is_active" value="1" @checked($topic->is_active)>
