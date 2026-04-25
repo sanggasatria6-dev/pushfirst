@@ -36,17 +36,22 @@ class VertexSeoFactoryService
 
     public function pickTopicsForBatch(int $limit = 5)
     {
+        $poolSize = max($limit * 3, $limit);
+
         return ArticleTopic::query()
             ->where('is_active', true)
             ->whereIn('category', config('portal.seo.allowed_categories', []))
             ->orderByRaw('COALESCE(last_generated_at, "1970-01-01 00:00:00") asc')
-            ->limit($limit)
+            ->limit($poolSize)
             ->get();
     }
 
     public function generateDailyBatch(int $limit = 5): int
     {
-        $topics = $this->pickTopicsForBatch($limit);
+        $topics = $this->pickTopicsForBatch($limit)
+            ->shuffle()
+            ->take($limit)
+            ->values();
 
         $created = 0;
 
@@ -123,6 +128,7 @@ class VertexSeoFactoryService
 
         return [
             ...$decoded,
+            'content_html' => $this->sanitizeGeneratedContent((string) $decoded['content_html']),
             'source_prompt' => $prompt,
             'generation_model' => $model,
         ];
@@ -175,12 +181,14 @@ Tugas:
 
 Aturan konten:
 - Panjang 1200-1800 kata
-- Wajib ada satu H1, beberapa H2, dan beberapa H3
+- Judul artikel utama cukup dikembalikan lewat field `title`, jadi jangan ulangi judul itu lagi di dalam `content_html`
+- Di dalam `content_html`, mulai langsung dari paragraf pembuka lalu lanjutkan dengan beberapa H2 dan H3
 - Gunakan HTML valid saja: <h2>, <h3>, <p>, <ul>, <li>, <strong>
 - Sisipkan placeholder iklan ini tepat satu kali di sekitar pertengahan artikel: {$adPlaceholder}
 - Jangan gunakan markdown
 - Jangan gunakan code fence
 - Hindari keyword stuffing
+- Hindari membuat artikel yang terasa sama dengan artikel lain yang pernah ditulis untuk tema ini
 
 Format output wajib:
 Kembalikan JSON valid tanpa teks tambahan dengan struktur tepat seperti ini:
@@ -253,5 +261,12 @@ PROMPT;
         }
 
         return collect($theme['search_intents'] ?? ['informational'])->random();
+    }
+
+    private function sanitizeGeneratedContent(string $contentHtml): string
+    {
+        $contentHtml = preg_replace('/<h1\b[^>]*>.*?<\/h1>/is', '', $contentHtml) ?? $contentHtml;
+
+        return trim($contentHtml);
     }
 }

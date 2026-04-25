@@ -58,6 +58,7 @@
             gap: 14px;
             color: var(--muted);
             margin-bottom: 20px;
+            font-size: .96rem;
         }
         .deck {
             margin: 0 0 28px;
@@ -104,7 +105,6 @@
             <div class="meta">
                 <span>{{ optional($article->published_at)->format('d M Y') }}</span>
                 <span>{{ strtoupper($article->topic?->country_code ?? 'ID') }}</span>
-                <span>{{ $article->generation_model ?: 'Editorial' }}</span>
             </div>
             <p class="deck">{{ $article->excerpt }}</p>
             <div class="content">{!! $contentHtml !!}</div>
