@@ -7,13 +7,43 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\FrontendConfigController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\HomeController;
+use App\Models\Article;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Response;
 
 $adminPath = trim(config('portal.admin_path', 'studio-panel'), '/');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
 Route::get('/microsaas/{microsaas:slug}/config.json', FrontendConfigController::class)->name('microsaas.config');
+Route::get('/robots.txt', function () use ($adminPath) {
+    $content = implode("\n", [
+        'User-agent: *',
+        'Allow: /',
+        "Disallow: /{$adminPath}",
+        '',
+        'Sitemap: '.url('/sitemap.xml'),
+    ]);
+
+    return Response::make($content, 200, [
+        'Content-Type' => 'text/plain; charset=UTF-8',
+    ]);
+})->name('robots');
+
+Route::get('/sitemap.xml', function () {
+    $articles = Article::query()
+        ->where('status', 'published')
+        ->latest('published_at')
+        ->get();
+
+    $xml = view('seo.sitemap', [
+        'articles' => $articles,
+    ])->render();
+
+    return Response::make($xml, 200, [
+        'Content-Type' => 'application/xml; charset=UTF-8',
+    ]);
+})->name('sitemap');
 
 Route::prefix($adminPath)->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {

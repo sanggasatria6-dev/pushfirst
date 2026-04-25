@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'SerbaInfo') }}</title>
+    <meta name="description" content="Portal informasi, aplikasi, dan referensi digital.">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="{{ url()->current() }}">
     <style>
         :root {
             --bg: #efe5d8;

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $article->title }}</title>
     <meta name="description" content="{{ $article->meta_description }}">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="{{ route('articles.show', $article) }}">
     <style>
         :root {
             --bg: #f2e7d9;
