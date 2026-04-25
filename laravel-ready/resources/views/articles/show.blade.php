@@ -70,6 +70,15 @@
             font-size: 1.05rem;
             line-height: 1.8;
         }
+        .cover {
+            width: 100%;
+            display: block;
+            margin: 0 0 28px;
+            border-radius: 22px;
+            border: 1px solid var(--line);
+            aspect-ratio: 1200 / 630;
+            object-fit: cover;
+        }
         .content { color: var(--text); }
         .content h2, .content h3 {
             line-height: 1.15;
@@ -117,6 +126,7 @@
                 <span>{{ strtoupper($article->topic?->country_code ?? 'ID') }}</span>
             </div>
             <p class="deck">{{ $article->excerpt }}</p>
+            <img class="cover" src="{{ route('articles.cover', $article) }}" alt="{{ $article->title }}" loading="eager">
             <div class="content">{!! $contentHtml !!}</div>
         </article>
 

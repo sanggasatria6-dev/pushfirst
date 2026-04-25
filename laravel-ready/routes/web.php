@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Response;
 $adminPath = trim(config('portal.admin_path', 'studio-panel'), '/');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/articles/{article:slug}/cover.svg', [ArticleController::class, 'cover'])->name('articles.cover');
 Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
 Route::get('/microsaas/{microsaas:slug}/config.json', FrontendConfigController::class)->name('microsaas.config');
 Route::get('/robots.txt', function () use ($adminPath) {

@@ -23,7 +23,7 @@ class DispatchSeoArticlesCommand extends Command
                 ? (int) $configuredLimit
                 : random_int($min, max($min, $max)));
 
-        $topics = $service->pickTopicsForBatch($limit);
+        $topics = $service->pickTopicSlotsForBatch($limit);
 
         foreach ($topics as $topic) {
             GenerateSeoArticleJob::dispatch($topic->id);

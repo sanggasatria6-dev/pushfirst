@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Article;
 use App\Models\ArticleTopic;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -46,12 +47,26 @@ class VertexSeoFactoryService
             ->get();
     }
 
+    public function pickTopicSlotsForBatch(int $limit = 5): Collection
+    {
+        $topics = $this->pickTopicsForBatch($limit);
+
+        if ($topics->isEmpty()) {
+            return collect();
+        }
+
+        $slots = collect();
+
+        while ($slots->count() < $limit) {
+            $slots = $slots->merge($topics->shuffle());
+        }
+
+        return $slots->take($limit)->values();
+    }
+
     public function generateDailyBatch(int $limit = 5): int
     {
-        $topics = $this->pickTopicsForBatch($limit)
-            ->shuffle()
-            ->take($limit)
-            ->values();
+        $topics = $this->pickTopicSlotsForBatch($limit);
 
         $created = 0;
 
@@ -100,8 +115,9 @@ class VertexSeoFactoryService
                     ]],
                 ]],
                 'generationConfig' => [
-                    'temperature' => 0.4,
-                    'topP' => 0.9,
+                    'temperature' => (float) config('portal.vertex.temperature', 0.35),
+                    'topP' => (float) config('portal.vertex.top_p', 0.85),
+                    'maxOutputTokens' => (int) config('portal.vertex.max_output_tokens', 1300),
                     'responseMimeType' => 'application/json',
                 ],
             ])
@@ -162,36 +178,32 @@ class VertexSeoFactoryService
         $theme = $this->themeOptions()[$topic->category] ?? [];
         $themeLabel = $theme['label'] ?? $topic->category;
         $categoryGuide = $theme['content_focus'] ?? 'Fokus artikel pada topik yang diberikan.';
+        $minWords = (int) config('portal.seo.article_min_words', 450);
+        $maxWords = (int) config('portal.seo.article_max_words', 750);
 
         return <<<PROMPT
-Anda adalah SEO content engine untuk portal affiliate dan micro-SaaS.
-
-Tugas:
-- Tulis artikel evergreen berkualitas tinggi dalam bahasa {$topic->language}
+Tulis artikel SEO ringkas dalam bahasa {$topic->language}.
 - Keyword utama: {$topic->keyword}
 - Tema konten: {$themeLabel}
 - Search intent: {$topic->search_intent}
 - Negara target: {$topic->country_code}
 - {$categoryGuide}
-- Gaya bahasa natural, tidak kaku, tidak terasa seperti AI
-- Hindari klaim palsu, angka palsu, atau referensi yang tidak bisa diverifikasi
-- Jangan menulis tentang pengalaman pribadi palsu
-- Fokus pada usefulness, readability, dan SEO on-page
-- Jangan menulis tema di luar tema yang diberikan
 
 Aturan konten:
-- Panjang 1200-1800 kata
-- Judul artikel utama cukup dikembalikan lewat field `title`, jadi jangan ulangi judul itu lagi di dalam `content_html`
-- Di dalam `content_html`, mulai langsung dari paragraf pembuka lalu lanjutkan dengan beberapa H2 dan H3
+- Panjang {$minWords}-{$maxWords} kata
+- Ringkas, praktis, dan langsung menjawab intent pencarian
+- Jangan ulangi judul di dalam `content_html`
+- Mulai `content_html` langsung dari paragraf pembuka, lalu gunakan H2/H3 seperlunya
 - Gunakan HTML valid saja: <h2>, <h3>, <p>, <ul>, <li>, <strong>
 - Sisipkan placeholder iklan ini tepat satu kali di sekitar pertengahan artikel: {$adPlaceholder}
 - Jangan gunakan markdown
 - Jangan gunakan code fence
 - Hindari keyword stuffing
-- Hindari membuat artikel yang terasa sama dengan artikel lain yang pernah ditulis untuk tema ini
+- Hindari klaim palsu, angka palsu, dan pengalaman pribadi palsu
+- Buat angle artikel berbeda dari artikel sejenis
 
 Format output wajib:
-Kembalikan JSON valid tanpa teks tambahan dengan struktur tepat seperti ini:
+Kembalikan JSON valid saja:
 {
   "title": "judul artikel",
   "slug": "slug-url-artikel",

@@ -9,8 +9,11 @@ return [
         'project_id' => env('VERTEX_PROJECT_ID'),
         'location' => env('VERTEX_LOCATION', 'global'),
         'publisher' => env('VERTEX_PUBLISHER', 'google'),
-        'model' => env('VERTEX_MODEL', 'gemini-2.5-flash'),
+        'model' => env('VERTEX_MODEL', 'gemini-2.5-flash-lite'),
         'articles_per_run' => (int) env('VERTEX_ARTICLES_PER_RUN', 5),
+        'max_output_tokens' => (int) env('VERTEX_MAX_OUTPUT_TOKENS', 1300),
+        'temperature' => (float) env('VERTEX_TEMPERATURE', 0.35),
+        'top_p' => (float) env('VERTEX_TOP_P', 0.85),
     ],
     'seo' => [
         'dispatch_times' => array_values(array_filter(array_map(
@@ -22,6 +25,8 @@ return [
             : null,
         'daily_min_articles' => (int) env('SEO_DAILY_MIN_ARTICLES', 5),
         'daily_max_articles' => (int) env('SEO_DAILY_MAX_ARTICLES', 7),
+        'article_min_words' => (int) env('SEO_ARTICLE_MIN_WORDS', 450),
+        'article_max_words' => (int) env('SEO_ARTICLE_MAX_WORDS', 650),
         'allowed_categories' => [
             'urban_farming',
             'informatics_learning',
