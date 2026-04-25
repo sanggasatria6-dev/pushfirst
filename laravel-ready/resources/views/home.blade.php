@@ -279,7 +279,7 @@
                 <div class="brand-mark">SP</div>
                 <div class="brand-copy">
                     <strong>{{ config('app.name', 'SerbaInfo Portal') }}</strong>
-                    <span>Portal artikel, tools, dan rekomendasi digital yang tertata rapi.</span>
+                    <span>Portal informasi, aplikasi, dan referensi digital.</span>
                 </div>
             </div>
             <nav class="nav">
@@ -291,9 +291,9 @@
 
         <section class="hero">
             <div class="hero-main">
-                <div class="eyebrow">Portal Siap Production</div>
-                <h1>Konten SEO, katalog app, dan affiliate tampil lebih meyakinkan.</h1>
-                <p class="lead">Semua elemen inti portal dirancang untuk terasa bersih, terkurasi, dan profesional. Micro-SaaS aktif, artikel terbaru, dan penawaran affiliate sekarang tampil dalam alur yang lebih jelas untuk pengunjung.</p>
+                <div class="eyebrow">SerbaInfo</div>
+                <h1>Informasi, aplikasi, dan referensi digital dalam satu portal.</h1>
+                <p class="lead">Portal ini memuat artikel, katalog aplikasi, dan materi promosi yang ditampilkan dalam struktur yang rapi dan mudah diakses.</p>
 
                 <div class="hero-meta">
                     <div class="metric">
@@ -306,7 +306,7 @@
                     </div>
                     <div class="metric">
                         <strong>{{ $heroBanner ? '1' : '0' }}</strong>
-                        <span class="muted">Promo hero aktif</span>
+                        <span class="muted">Banner aktif</span>
                     </div>
                 </div>
 
@@ -326,18 +326,18 @@
                         <img src="{{ $heroBanner->image_url }}" alt="{{ $heroBanner->name }}">
                         <div>
                             <strong>{{ $heroBanner->name }}</strong>
-                            <p>{{ $heroBanner->cta_text ?: 'Banner ini ditampilkan otomatis dari placement home hero.' }}</p>
+                            <p>{{ $heroBanner->cta_text ?: 'Materi promosi aktif.' }}</p>
                         </div>
                     </a>
                 @else
                     <div class="banner-card">
-                        <strong>Belum ada banner hero aktif</strong>
-                        <p>Tambahkan banner affiliate pada placement `home_hero` untuk menampilkan promo utama di area ini.</p>
+                        <strong>Belum ada banner aktif</strong>
+                        <p>Tambahkan banner affiliate pada placement `home_hero` untuk menampilkan materi promosi pada area ini.</p>
                     </div>
                 @endif
                 <div class="banner-card">
-                    <strong>Alur konten lebih terarah</strong>
-                    <p>Artikel terbaru, katalog, dan promo kini memiliki hierarki visual yang lebih jelas sehingga portal terasa lebih matang saat dipakai live.</p>
+                    <strong>Informasi portal</strong>
+                    <p>Halaman ini menampilkan artikel terbaru, aplikasi aktif, dan banner promosi.</p>
                 </div>
             </aside>
         </section>
@@ -349,7 +349,7 @@
                         <div class="eyebrow">Katalog</div>
                         <h2>Micro-SaaS Aktif</h2>
                     </div>
-                    <p>Aplikasi yang sudah siap dibuka langsung dari portal utama.</p>
+                    <p>Aplikasi yang tersedia untuk diakses melalui portal.</p>
                 </div>
                 <div class="micro-grid">
                     @forelse ($featuredMicrosaas as $item)
@@ -373,7 +373,7 @@
                         <div class="eyebrow">Editorial</div>
                         <h2>Artikel SEO Terbaru</h2>
                     </div>
-                    <p>Konten terbit terbaru dari engine SEO dan editor portal.</p>
+                    <p>Artikel terbaru yang telah dipublikasikan.</p>
                 </div>
                 <div class="article-grid">
                     @forelse ($latestArticles as $article)
