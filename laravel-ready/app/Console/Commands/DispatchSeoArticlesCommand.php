@@ -16,9 +16,12 @@ class DispatchSeoArticlesCommand extends Command
     {
         $min = (int) config('portal.seo.daily_min_articles', 5);
         $max = (int) config('portal.seo.daily_max_articles', 7);
+        $configuredLimit = config('portal.seo.dispatch_limit_per_run');
         $limit = $this->option('limit') !== null
             ? (int) $this->option('limit')
-            : random_int($min, max($min, $max));
+            : ($configuredLimit !== null
+                ? (int) $configuredLimit
+                : random_int($min, max($min, $max)));
 
         $topics = $service->pickTopicsForBatch($limit);
 

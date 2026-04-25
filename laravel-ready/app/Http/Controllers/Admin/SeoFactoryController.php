@@ -26,12 +26,13 @@ class SeoFactoryController extends Controller
             'topics' => ArticleTopic::latest()->get(),
             'articles' => Article::latest()->limit(20)->get(),
             'banners' => AffiliateBanner::latest()->get(),
+            'themes' => $this->seoFactory->themeOptions(),
         ]);
     }
 
     public function storeTopic(StoreSeoTopicRequest $request): RedirectResponse
     {
-        ArticleTopic::create($request->validated());
+        ArticleTopic::create($this->seoFactory->prepareTopicPayload($request->validated()));
 
         return back()->with('status', 'Topik SEO berhasil ditambahkan.');
     }
@@ -58,7 +59,7 @@ class SeoFactoryController extends Controller
 
     public function updateTopic(StoreSeoTopicRequest $request, ArticleTopic $topic): RedirectResponse
     {
-        $topic->update($request->validated());
+        $topic->update($this->seoFactory->prepareTopicPayload($request->validated(), $topic));
 
         return back()->with('status', 'Topik SEO berhasil diperbarui.');
     }

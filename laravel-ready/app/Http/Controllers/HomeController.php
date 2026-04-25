@@ -12,12 +12,7 @@ class HomeController extends Controller
     public function index(): View
     {
         return view('home', [
-            'heroBanners' => AffiliateBanner::query()
-                ->where('placement', 'home_hero')
-                ->where('is_active', true)
-                ->inRandomOrder()
-                ->limit(3)
-                ->get(),
+            'heroBanner' => AffiliateBanner::pickOneForPlacement('home_hero'),
             'featuredMicrosaas' => Microsaas::query()
                 ->where('status', 'active')
                 ->orderByDesc('is_featured')

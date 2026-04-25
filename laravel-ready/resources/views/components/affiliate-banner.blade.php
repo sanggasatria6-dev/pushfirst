@@ -1,12 +1,14 @@
-<aside style="margin:24px 0;padding:18px;border:1px solid #dcc8b2;border-radius:20px;background:#fff8ef;">
-    <a href="{{ $banner->target_url }}" target="_blank" rel="nofollow sponsored">
-        <img src="{{ $banner->image_url }}" alt="{{ $banner->name }}" style="width:100%;border-radius:14px;">
+<aside style="margin:24px 0;padding:16px;border:1px solid rgba(97,70,50,.14);border-radius:24px;background:rgba(255,252,248,.9);box-shadow:0 20px 48px rgba(50,31,18,.06);">
+    <a href="{{ $banner->target_url }}" target="_blank" rel="nofollow sponsored" style="display:block;text-decoration:none;color:#241812;">
+        <img src="{{ $banner->image_url }}" alt="{{ $banner->name }}" style="width:100%;display:block;border-radius:18px;object-fit:cover;">
     </a>
-    @if ($banner->cta_text)
-        <div style="margin-top:12px;">
-            <a href="{{ $banner->target_url }}" target="_blank" rel="nofollow sponsored" style="display:inline-block;background:#9f3f2f;color:#fff;padding:10px 14px;border-radius:12px;text-decoration:none;">
-                {{ $banner->cta_text }}
-            </a>
+    <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+        <div>
+            <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9a6438;font-weight:700;">Affiliate</div>
+            <strong style="display:block;margin-top:4px;">{{ $banner->name }}</strong>
         </div>
-    @endif
+        <a href="{{ $banner->target_url }}" target="_blank" rel="nofollow sponsored" style="display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border-radius:14px;background:#25573f;color:#fff;text-decoration:none;font-weight:700;">
+            {{ $banner->cta_text ?: 'Lihat Penawaran' }}
+        </a>
+    </div>
 </aside>

@@ -11,24 +11,9 @@ class ArticleController extends Controller
 {
     public function show(Article $article): View
     {
-        $headerBanner = AffiliateBanner::query()
-            ->where('placement', 'article_header')
-            ->where('is_active', true)
-            ->inRandomOrder()
-            ->first();
-
-        $inlineBanners = AffiliateBanner::query()
-            ->where('placement', 'article_inline')
-            ->where('is_active', true)
-            ->inRandomOrder()
-            ->limit(2)
-            ->get();
-
-        $footerBanner = AffiliateBanner::query()
-            ->where('placement', 'article_footer')
-            ->where('is_active', true)
-            ->inRandomOrder()
-            ->first();
+        $headerBanner = AffiliateBanner::pickOneForPlacement('article_header');
+        $inlineBanners = AffiliateBanner::pickForPlacement('article_inline', 2);
+        $footerBanner = AffiliateBanner::pickOneForPlacement('article_footer');
 
         $contentHtml = $this->injectInlineBanners($article->content_html, $inlineBanners->all());
 

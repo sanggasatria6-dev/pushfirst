@@ -10,6 +10,30 @@ use RuntimeException;
 
 class VertexSeoFactoryService
 {
+    public function themeOptions(): array
+    {
+        return config('portal.seo.themes', []);
+    }
+
+    public function prepareTopicPayload(array $input, ?ArticleTopic $topic = null): array
+    {
+        $category = $input['category'];
+        $theme = $this->themeOptions()[$category] ?? null;
+
+        if (! $theme) {
+            throw new RuntimeException("Tema SEO {$category} tidak tersedia.");
+        }
+
+        return [
+            'keyword' => $input['keyword'] ?? $topic?->keyword ?? $this->pickKeywordForCategory($category),
+            'category' => $category,
+            'search_intent' => $input['search_intent'] ?? $topic?->search_intent ?? $this->pickIntentForCategory($category),
+            'language' => $input['language'] ?? $topic?->language ?? config('portal.seo.default_language', 'id'),
+            'country_code' => strtoupper($input['country_code'] ?? $topic?->country_code ?? config('portal.seo.default_country_code', 'ID')),
+            'is_active' => (bool) ($input['is_active'] ?? $topic?->is_active ?? true),
+        ];
+    }
+
     public function pickTopicsForBatch(int $limit = 5)
     {
         return ArticleTopic::query()
@@ -27,6 +51,7 @@ class VertexSeoFactoryService
         $created = 0;
 
         foreach ($topics as $topic) {
+            $this->refreshTopicKeyword($topic);
             $payload = $this->generateArticlePayload($topic);
             $this->persistArticle($topic, $payload);
             $topic->update(['last_generated_at' => now()]);
@@ -38,6 +63,7 @@ class VertexSeoFactoryService
 
     public function generateForTopic(ArticleTopic $topic): Article
     {
+        $this->refreshTopicKeyword($topic);
         $payload = $this->generateArticlePayload($topic);
         $article = $this->persistArticle($topic, $payload);
         $topic->update(['last_generated_at' => now()]);
@@ -127,12 +153,9 @@ class VertexSeoFactoryService
     private function buildPrompt(ArticleTopic $topic): string
     {
         $adPlaceholder = config('portal.ad_placeholder', '<div data-ad-slot="article-inline"></div>');
-        $categoryGuide = match ($topic->category) {
-            'buyer_guides' => 'Fokus artikel pada saran pembelian, rekomendasi produk, perbandingan produk, buying guide, value for money, dan evaluasi fitur.',
-            'iot' => 'Fokus artikel pada Internet of Things, sensor, embedded systems, otomasi, smart devices, dan penerapan IoT secara praktis.',
-            'informatics_learning' => 'Fokus artikel pada pembelajaran teknik informatika, database, algoritma, pemrograman, sistem informasi, dan konsep software engineering untuk pelajar atau pemula menengah.',
-            default => 'Fokus artikel pada topik yang diberikan.',
-        };
+        $theme = $this->themeOptions()[$topic->category] ?? [];
+        $themeLabel = $theme['label'] ?? $topic->category;
+        $categoryGuide = $theme['content_focus'] ?? 'Fokus artikel pada topik yang diberikan.';
 
         return <<<PROMPT
 Anda adalah SEO content engine untuk portal affiliate dan micro-SaaS.
@@ -140,7 +163,7 @@ Anda adalah SEO content engine untuk portal affiliate dan micro-SaaS.
 Tugas:
 - Tulis artikel evergreen berkualitas tinggi dalam bahasa {$topic->language}
 - Keyword utama: {$topic->keyword}
-- Kategori topik: {$topic->category}
+- Tema konten: {$themeLabel}
 - Search intent: {$topic->search_intent}
 - Negara target: {$topic->country_code}
 - {$categoryGuide}
@@ -148,7 +171,7 @@ Tugas:
 - Hindari klaim palsu, angka palsu, atau referensi yang tidak bisa diverifikasi
 - Jangan menulis tentang pengalaman pribadi palsu
 - Fokus pada usefulness, readability, dan SEO on-page
-- Jangan menulis tema di luar buyer guides, IoT, atau pembelajaran teknik informatika
+- Jangan menulis tema di luar tema yang diberikan
 
 Aturan konten:
 - Panjang 1200-1800 kata
@@ -169,5 +192,66 @@ Kembalikan JSON valid tanpa teks tambahan dengan struktur tepat seperti ini:
   "content_html": "<p>...</p>"
 }
 PROMPT;
+    }
+
+    private function refreshTopicKeyword(ArticleTopic $topic): void
+    {
+        $payload = [
+            'keyword' => $this->pickKeywordForCategory($topic->category, $topic->id, $topic->keyword),
+            'search_intent' => $this->pickIntentForCategory($topic->category),
+        ];
+
+        $topic->fill($payload);
+
+        if ($topic->isDirty()) {
+            $topic->save();
+        }
+    }
+
+    private function pickKeywordForCategory(string $category, ?int $topicId = null, ?string $currentKeyword = null): string
+    {
+        $theme = $this->themeOptions()[$category] ?? null;
+
+        if (! $theme) {
+            throw new RuntimeException("Tema SEO {$category} tidak tersedia.");
+        }
+
+        $pool = collect($theme['keyword_pool'] ?? [])
+            ->filter(fn ($keyword) => filled($keyword))
+            ->values();
+
+        if ($pool->isEmpty()) {
+            throw new RuntimeException("Pool keyword untuk tema {$category} kosong.");
+        }
+
+        $usedKeywords = ArticleTopic::query()
+            ->where('category', $category)
+            ->when($topicId, fn ($query) => $query->where('id', '!=', $topicId))
+            ->pluck('keyword')
+            ->filter()
+            ->map(static fn (string $keyword) => Str::lower(trim($keyword)));
+
+        if (filled($currentKeyword)) {
+            $usedKeywords->push(Str::lower(trim($currentKeyword)));
+        }
+
+        $available = $pool->reject(
+            fn (string $keyword) => $usedKeywords->contains(Str::lower(trim($keyword)))
+        )->values();
+
+        $source = $available->isNotEmpty() ? $available : $pool;
+
+        return $source->random();
+    }
+
+    private function pickIntentForCategory(string $category): string
+    {
+        $theme = $this->themeOptions()[$category] ?? null;
+
+        if (! $theme) {
+            throw new RuntimeException("Tema SEO {$category} tidak tersedia.");
+        }
+
+        return collect($theme['search_intents'] ?? ['informational'])->random();
     }
 }
