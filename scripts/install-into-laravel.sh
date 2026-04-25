@@ -34,7 +34,7 @@ fi
 echo "Copying Laravel-ready files into: $TARGET"
 
 if [[ "$OVERWRITE" -eq 1 ]]; then
-  rsync -av --delete "$SOURCE_DIR/" "$TARGET/"
+  rsync -av "$SOURCE_DIR/" "$TARGET/"
 else
   rsync -av --ignore-existing "$SOURCE_DIR/" "$TARGET/"
 fi
