@@ -18,6 +18,7 @@ class UpdateArticleRequest extends FormRequest
             'meta_description' => ['required', 'string', 'max:180'],
             'excerpt' => ['nullable', 'string'],
             'content_html' => ['required', 'string'],
+            'source_references_text' => ['nullable', 'string'],
             'status' => ['required', 'in:draft,published'],
         ];
     }

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('placement', 30);
-            $table->string('image_url');
+            $table->string('image_url')->nullable();
             $table->string('target_url');
             $table->string('cta_text')->nullable();
             $table->unsignedInteger('weight')->default(10);

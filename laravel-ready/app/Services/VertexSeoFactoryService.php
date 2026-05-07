@@ -145,6 +145,7 @@ class VertexSeoFactoryService
         return [
             ...$decoded,
             'content_html' => $this->sanitizeGeneratedContent((string) $decoded['content_html']),
+            'source_references' => $this->sanitizeReferences($decoded['source_references'] ?? []),
             'source_prompt' => $prompt,
             'generation_model' => $model,
         ];
@@ -165,6 +166,7 @@ class VertexSeoFactoryService
             'meta_description' => $payload['meta_description'],
             'excerpt' => $payload['excerpt'],
             'content_html' => $payload['content_html'],
+            'source_references' => $payload['source_references'] ?? [],
             'source_prompt' => $payload['source_prompt'],
             'generation_model' => $payload['generation_model'],
             'status' => 'published',
@@ -174,7 +176,6 @@ class VertexSeoFactoryService
 
     private function buildPrompt(ArticleTopic $topic): string
     {
-        $adPlaceholder = config('portal.ad_placeholder', '<div data-ad-slot="article-inline"></div>');
         $theme = $this->themeOptions()[$topic->category] ?? [];
         $themeLabel = $theme['label'] ?? $topic->category;
         $categoryGuide = $theme['content_focus'] ?? 'Fokus artikel pada topik yang diberikan.';
@@ -191,11 +192,14 @@ Tulis artikel SEO ringkas dalam bahasa {$topic->language}.
 
 Aturan konten:
 - Panjang {$minWords}-{$maxWords} kata
-- Ringkas, praktis, dan langsung menjawab intent pencarian
+- Langsung menjawab intent pencarian dengan bahasa Indonesia yang natural
 - Jangan ulangi judul di dalam `content_html`
 - Mulai `content_html` langsung dari paragraf pembuka, lalu gunakan H2/H3 seperlunya
 - Gunakan HTML valid saja: <h2>, <h3>, <p>, <ul>, <li>, <strong>
-- Sisipkan placeholder iklan ini tepat satu kali di sekitar pertengahan artikel: {$adPlaceholder}
+- Jangan menyebut AI, Gemini, model, prompt, atau proses generasi
+- Jangan menulis kalimat seperti "berdasarkan Gemini", "menurut AI", atau sumber fiktif lain
+- Sertakan 2 sampai 4 referensi nyata dari sumber tepercaya jika memungkinkan: jurnal, situs kampus, asosiasi resmi, lembaga riset, pemerintah, dokumentasi resmi, atau vendor resmi
+- Jika topik membahas tempat olahraga terdekat, jangan mengarang alamat spesifik; fokus pada cara memilih dan menilai fasilitas
 - Jangan gunakan markdown
 - Jangan gunakan code fence
 - Hindari keyword stuffing
@@ -209,7 +213,15 @@ Kembalikan JSON valid saja:
   "slug": "slug-url-artikel",
   "meta_description": "meta description maksimal 155 karakter",
   "excerpt": "ringkasan artikel 1-2 kalimat",
-  "content_html": "<p>...</p>"
+  "content_html": "<p>...</p>",
+  "source_references": [
+    {
+      "title": "judul sumber",
+      "publisher": "nama penerbit",
+      "url": "https://contoh.com",
+      "year": "2024"
+    }
+  ]
 }
 PROMPT;
     }
@@ -278,7 +290,39 @@ PROMPT;
     private function sanitizeGeneratedContent(string $contentHtml): string
     {
         $contentHtml = preg_replace('/<h1\b[^>]*>.*?<\/h1>/is', '', $contentHtml) ?? $contentHtml;
+        $contentHtml = str_replace((string) config('portal.ad_placeholder', ''), '', $contentHtml);
+        $contentHtml = preg_replace('/<p>\s*<\/p>/i', '', $contentHtml) ?? $contentHtml;
 
         return trim($contentHtml);
+    }
+
+    private function sanitizeReferences(mixed $references): array
+    {
+        return collect(is_array($references) ? $references : [])
+            ->map(function ($reference): ?array {
+                if (! is_array($reference)) {
+                    return null;
+                }
+
+                $title = trim((string) ($reference['title'] ?? ''));
+                $publisher = trim((string) ($reference['publisher'] ?? ''));
+                $url = trim((string) ($reference['url'] ?? ''));
+                $year = trim((string) ($reference['year'] ?? ''));
+
+                if ($title === '') {
+                    return null;
+                }
+
+                return [
+                    'title' => $title,
+                    'publisher' => $publisher ?: null,
+                    'url' => filter_var($url, FILTER_VALIDATE_URL) ? $url : null,
+                    'year' => $year ?: null,
+                ];
+            })
+            ->filter()
+            ->take(4)
+            ->values()
+            ->all();
     }
 }

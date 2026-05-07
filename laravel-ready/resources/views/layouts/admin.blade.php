@@ -186,16 +186,33 @@
     </style>
 </head>
 <body>
+@php($branding = app(\App\Support\PortalSettings::class)->branding())
 <div class="shell">
     <aside class="sidebar">
         <div class="brand">
-            <strong>Mega Portal Studio</strong>
-            <span>Panel pengelolaan portal.</span>
+            <div style="display:flex;gap:12px;align-items:center;">
+                @if (!empty($branding['logo_url']))
+                    <img
+                        src="{{ $branding['logo_url'] }}"
+                        alt="{{ $branding['logo_alt'] ?? ($branding['site_name'] ?? config('app.name')) }}"
+                        style="width:42px;height:42px;object-fit:contain;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);padding:6px;"
+                        loading="eager"
+                    >
+                @else
+                    <div style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);font-weight:700;">
+                        {{ $branding['mark_text'] ?? config('portal.branding.mark_text', 'AN') }}
+                    </div>
+                @endif
+                <div>
+                    <strong style="display:block;font-size:1.1rem;margin-bottom:4px;">{{ $branding['site_name'] ?? config('app.name', 'Arena Nalar') }}</strong>
+                    <span style="display:block;">Panel editorial dan media portal.</span>
+                </div>
+            </div>
         </div>
         <nav>
             <a href="{{ route('admin.dashboard') }}">Dashboard</a>
             <a href="{{ route('admin.microsaas.index') }}">Micro-SaaS</a>
-            <a href="{{ route('admin.seo.index') }}">SEO Factory</a>
+            <a href="{{ route('admin.seo.index') }}">Konten & Media</a>
             <a href="{{ route('home') }}" target="_blank">Lihat Home</a>
         </nav>
     </aside>

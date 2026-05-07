@@ -14,6 +14,7 @@ class Article extends Model
         'meta_description',
         'excerpt',
         'content_html',
+        'source_references',
         'source_prompt',
         'generation_model',
         'status',
@@ -22,6 +23,7 @@ class Article extends Model
 
     protected $casts = [
         'published_at' => 'datetime',
+        'source_references' => 'array',
     ];
 
     public function topic(): BelongsTo

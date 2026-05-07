@@ -5,34 +5,63 @@ namespace App\Http\Controllers;
 use App\Models\AffiliateBanner;
 use App\Models\Article;
 use Illuminate\Support\Str;
+use App\Services\VertexSeoFactoryService;
+use App\Support\ArticleMediaLibrary;
+use App\Support\PortalSettings;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class ArticleController extends Controller
 {
-    public function show(Article $article): View
-    {
-        $headerBanner = AffiliateBanner::pickOneForPlacement('article_header');
-        $inlineBanners = AffiliateBanner::pickForPlacement('article_inline', 2);
-        $footerBanner = AffiliateBanner::pickOneForPlacement('article_footer');
-
-        $contentHtml = $this->injectInlineBanners($article->content_html, $inlineBanners->all());
-
-        return view('articles.show', compact('article', 'headerBanner', 'footerBanner', 'contentHtml'));
+    public function __construct(
+        private readonly ArticleMediaLibrary $articleMediaLibrary,
+        private readonly PortalSettings $portalSettings,
+        private readonly VertexSeoFactoryService $seoFactory,
+    ) {
     }
 
-    public function cover(Article $article): Response
+    public function show(Article $article): View
     {
+        $inlineBanners = AffiliateBanner::pickForPlacement('article_inline', 1);
+        $contentHtml = $this->injectInlineBlocks($article->content_html, $inlineBanners->all());
+        $theme = $this->seoFactory->themeOptions()[$article->topic?->category ?? ''] ?? [];
+
+        return view('articles.show', [
+            'article' => $article,
+            'contentHtml' => $contentHtml,
+            'portalBranding' => $this->portalSettings->branding(),
+            'affiliateSettings' => $this->portalSettings->affiliate(),
+            'themeLabel' => $theme['label'] ?? 'Artikel',
+            'sourceReferences' => $article->source_references ?? [],
+        ]);
+    }
+
+    public function cover(Article $article): Response|RedirectResponse
+    {
+        $image = $this->articleMediaLibrary->pickForArticle($article);
+
+        if ($image) {
+            if (($image['storage'] ?? null) === 'public') {
+                return response()->file(Storage::disk('public')->path($image['path']));
+            }
+
+            return response()->file(public_path($image['path']));
+        }
+
         $category = $article->topic?->category ?? 'default';
         $palette = match ($category) {
-            'urban_farming' => ['#314a2a', '#6e8b58', '#efe6d5'],
-            'informatics_learning' => ['#263f4b', '#5e7f8e', '#edf3ef'],
-            'business_growth' => ['#4b3829', '#a66b3f', '#f2e2cf'],
+            'sports_training' => ['#193d3d', '#2d7c70', '#eef7f2'],
+            'sports_places' => ['#24415a', '#5c93c5', '#eef4fb'],
+            'sports_gear' => ['#4d3326', '#c27a3e', '#fff2e2'],
+            'it_insights' => ['#1f2e55', '#4f6fbb', '#edf2fb'],
+            'hydroponics' => ['#314a2a', '#6e8b58', '#efe6d5'],
             default => ['#32482a', '#8f623a', '#f1e4d4'],
         };
         $label = Str::limit($article->title, 72, '');
         $escapedTitle = e($label);
-        $escapedCategory = e(Str::title(str_replace('_', ' ', $category)));
+        $escapedCategory = e($this->seoFactory->themeOptions()[$category]['label'] ?? Str::title(str_replace('_', ' ', $category)));
 
         $svg = <<<SVG
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="{$escapedTitle}">
@@ -56,7 +85,7 @@ SVG;
         ]);
     }
 
-    private function injectInlineBanners(string $html, array $banners): string
+    private function injectInlineBlocks(string $html, array $banners): string
     {
         if (count($banners) === 0) {
             return $html;
@@ -77,12 +106,8 @@ SVG;
             $paragraphCount++;
             $result .= $paragraph.$closingTag;
 
-            if ($paragraphCount === 2 && isset($banners[0])) {
+            if ($paragraphCount === 3 && isset($banners[0])) {
                 $result .= view('components.affiliate-banner', ['banner' => $banners[0]])->render();
-            }
-
-            if ($paragraphCount === 5 && isset($banners[1])) {
-                $result .= view('components.affiliate-banner', ['banner' => $banners[1]])->render();
             }
         }
 

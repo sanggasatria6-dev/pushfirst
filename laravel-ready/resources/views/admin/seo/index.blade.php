@@ -1,81 +1,127 @@
-@extends('layouts.admin', ['title' => 'SEO Factory', 'subtitle' => 'Pengelolaan tema, artikel, dan banner affiliate.'])
+@extends('layouts.admin', ['title' => 'Konten & Media', 'subtitle' => 'Branding, topik artikel, media gambar, dan placement affiliate untuk portal production.'])
 
 @php
     $themeLabels = collect($themes)->mapWithKeys(fn ($theme, $key) => [$key => $theme['label']]);
+    $branding = $settings['branding'] ?? [];
+    $homepage = $settings['homepage'] ?? [];
+    $affiliate = $settings['affiliate'] ?? [];
 @endphp
 
 @section('content')
 <section class="grid grid-3" style="margin-bottom:18px;">
     <div class="stat">
-        <span class="pill">Tema Aktif</span>
-        <strong>{{ $topics->count() }}</strong>
-        <div class="muted">Tema aktif yang digunakan untuk produksi artikel.</div>
-    </div>
-    <div class="stat">
-        <span class="pill">Banner</span>
-        <strong>{{ $banners->where('is_active', true)->count() }}</strong>
-        <div class="muted">Banner aktif yang tersedia untuk setiap placement.</div>
+        <span class="pill">Brand</span>
+        <strong>{{ $branding['site_name'] ?? config('app.name', 'Arena Nalar') }}</strong>
+        <div class="muted">Nama portal aktif di frontend dan artikel.</div>
     </div>
     <div class="stat">
         <span class="pill">Artikel</span>
         <strong>{{ $articles->where('status', 'published')->count() }}</strong>
-        <div class="muted">Artikel terbit yang tersedia pada portal.</div>
+        <div class="muted">Artikel publish yang siap tampil di home.</div>
+    </div>
+    <div class="stat">
+        <span class="pill">Media</span>
+        <strong>{{ collect($articleImagesByCategory)->flatten(1)->count() }}</strong>
+        <div class="muted">Gambar kategori yang siap dipakai sebagai cover artikel.</div>
     </div>
 </section>
 
 <div class="grid grid-2">
     <section class="panel">
-        <div class="inline" style="justify-content:space-between;align-items:start;">
-            <div>
-                <span class="pill">Tema SEO</span>
-                <h3 style="margin:10px 0 6px;">Tambah Tema Artikel</h3>
-                <p class="muted" style="margin:0;">Tema baru akan memakai keyword dan intent otomatis sesuai konfigurasi.</p>
-            </div>
-        </div>
-        <form method="POST" action="{{ route('admin.seo.topics.store') }}" class="stack" style="margin-top:18px;">
+        <span class="pill">Branding</span>
+        <h3 style="margin:10px 0 6px;">Identitas Portal</h3>
+        <p class="muted" style="margin:0;">Ubah nama web, tagline, copy hero, dan catatan affiliate tanpa edit file manual.</p>
+
+        <form method="POST" action="{{ route('admin.seo.branding.update') }}" class="stack" style="margin-top:18px;">
             @csrf
-            <select name="category" required>
-                <option value="">Pilih tema konten</option>
-                @foreach ($themes as $key => $theme)
-                    <option value="{{ $key }}">{{ $theme['label'] }}</option>
-                @endforeach
-            </select>
-            <div class="card-note">
-                <strong>Keyword otomatis</strong>
-                <div class="muted" style="margin-top:6px;">Keyword dipilih otomatis dari pool keyword tema.</div>
-            </div>
-            <label class="inline" style="justify-content:flex-start;">
-                <input style="width:auto;" type="checkbox" name="is_active" value="1" checked>
-                <span>Aktif untuk generator</span>
-            </label>
-            <button type="submit">Simpan Tema</button>
+            @method('PUT')
+            <input type="text" name="site_name" value="{{ $branding['site_name'] ?? config('app.name', 'Arena Nalar') }}" placeholder="Nama website" required>
+            <input type="text" name="tagline" value="{{ $branding['tagline'] ?? '' }}" placeholder="Tagline singkat">
+            <input type="text" name="hero_title" value="{{ $homepage['hero_title'] ?? '' }}" placeholder="Judul hero" required>
+            <textarea name="hero_description" rows="3" placeholder="Deskripsi hero" required>{{ $homepage['hero_description'] ?? '' }}</textarea>
+            <input type="text" name="footer_note" value="{{ $homepage['footer_note'] ?? '' }}" placeholder="Catatan footer">
+            <input type="text" name="affiliate_disclosure" value="{{ $affiliate['disclosure'] ?? '' }}" placeholder="Disclosure affiliate">
+            <button type="submit">Simpan Branding</button>
         </form>
     </section>
 
     <section class="panel">
-        <span class="pill">Banner Affiliate</span>
-        <h3 style="margin:10px 0 6px;">Tambah Banner</h3>
-        <p class="muted" style="margin:0;">CTA bersifat opsional.</p>
+        <span class="pill">Logo</span>
+        <h3 style="margin:10px 0 6px;">Upload Logo Website</h3>
+        <p class="muted" style="margin:0;">Upload logo Anda di sini. File akan dipakai di home dan halaman artikel.</p>
+
+        @if (!empty($branding['logo_url']))
+            <div class="card-note" style="margin-top:18px;">
+                <img src="{{ $branding['logo_url'] }}" alt="{{ $branding['logo_alt'] ?? ($branding['site_name'] ?? 'Logo') }}" style="width:88px;height:88px;object-fit:contain;border-radius:18px;background:#fff;border:1px solid rgba(101,73,48,.12);padding:10px;">
+                <div class="muted" style="margin-top:10px;">Logo aktif saat ini.</div>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('admin.seo.branding.logo.store') }}" enctype="multipart/form-data" class="stack" style="margin-top:18px;">
+            @csrf
+            <input type="file" name="logo" accept=".jpg,.jpeg,.png,.webp,.svg" required>
+            <input type="text" name="logo_alt" value="{{ $branding['logo_alt'] ?? ($branding['site_name'] ?? '') }}" placeholder="Alt text logo">
+            <button type="submit">Upload Logo</button>
+        </form>
+
+        @if (!empty($branding['logo_url']))
+            <form method="POST" action="{{ route('admin.seo.branding.logo.destroy') }}" style="margin-top:12px;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="danger">Hapus Logo</button>
+            </form>
+        @endif
+    </section>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px;">
+    <section class="panel">
+        <span class="pill">Media Artikel</span>
+        <h3 style="margin:10px 0 6px;">Upload Gambar per Kategori</h3>
+        <p class="muted" style="margin:0;">Inilah tempat upload gambar artikel. Setiap artikel akan mengambil satu gambar cover secara otomatis dari kategori/topik yang cocok.</p>
+
+        <form method="POST" action="{{ route('admin.seo.media.article-images.store') }}" enctype="multipart/form-data" class="stack" style="margin-top:18px;">
+            @csrf
+            <select name="category" required>
+                <option value="">Pilih kategori gambar</option>
+                @foreach ($themes as $key => $theme)
+                    <option value="{{ $key }}">{{ $theme['label'] }}</option>
+                @endforeach
+            </select>
+            <input type="file" name="images[]" accept=".jpg,.jpeg,.png,.webp" multiple required>
+            <div class="card-note">
+                <strong>Alur upload</strong>
+                <div class="muted" style="margin-top:6px;">Upload banyak gambar sekaligus. Sistem akan menyimpan ke library kategori dan memakainya sebagai cover artikel.</div>
+            </div>
+            <button type="submit">Upload Gambar</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <span class="pill">Affiliate</span>
+        <h3 style="margin:10px 0 6px;">Placement Link Involve Asia</h3>
+        <p class="muted" style="margin:0;">Kalau akun affiliate Anda belum siap, bagian ini bisa diisi belakangan. Tempel `target_url` saat link sudah jadi. Gambar banner opsional.</p>
+
         <form method="POST" action="{{ route('admin.seo.banners.store') }}" class="stack" style="margin-top:18px;">
             @csrf
-            <input type="text" name="name" placeholder="Nama banner" required>
+            <input type="text" name="name" placeholder="Nama placement, contoh: Raket Badminton Partner" required>
             <select name="placement" required>
-                <option value="home_hero">Home Hero</option>
-                <option value="article_header">Article Header</option>
                 <option value="article_inline">Article Inline</option>
+                <option value="article_header">Article Header</option>
                 <option value="article_footer">Article Footer</option>
+                <option value="home_hero">Home Hero</option>
             </select>
-            <input type="url" name="image_url" placeholder="URL gambar banner" required>
-            <input type="url" name="target_url" placeholder="URL affiliate" required>
+            <input type="url" name="image_url" placeholder="URL gambar opsional">
+            <input type="url" name="target_url" placeholder="URL affiliate / Involve Asia" required>
             <div class="inline">
-                <input type="text" name="cta_text" placeholder="CTA opsional, contoh: Cek Promo">
-                <input type="number" name="weight" value="10" min="1" max="100" placeholder="Bobot">
+                <input type="text" name="cta_text" placeholder="CTA opsional, contoh: Cek Raket">
+                <input type="number" name="weight" value="10" min="1" max="100">
             </div>
             <label class="inline" style="justify-content:flex-start;">
                 <input style="width:auto;" type="checkbox" name="is_active" value="1" checked>
                 <span>Aktif</span>
             </label>
-            <button type="submit">Simpan Banner</button>
+            <button type="submit">Simpan Placement</button>
         </form>
     </section>
 </div>
@@ -84,8 +130,8 @@
     <div class="inline" style="justify-content:space-between;align-items:start;">
         <div>
             <span class="pill">Generator</span>
-            <h3 style="margin:10px 0 6px;">Generate Artikel Sekarang</h3>
-            <p class="muted" style="margin:0;">Artikel diproduksi dari tema aktif berdasarkan rotasi jadwal.</p>
+            <h3 style="margin:10px 0 6px;">Generate Batch Artikel</h3>
+            <p class="muted" style="margin:0;">Tema portal sekarang diarahkan ke olahraga, perlengkapan olahraga, IT, dan hidroponik. Prompt juga dikunci supaya tidak menyebut Gemini atau AI di artikel.</p>
         </div>
         <form method="POST" action="{{ route('admin.seo.generate') }}" style="width:auto;">
             @csrf
@@ -96,8 +142,24 @@
 
 <div class="grid grid-2" style="margin-top:18px;">
     <section class="panel">
-        <span class="pill">Tema Tersimpan</span>
-        <h3 style="margin:10px 0 16px;">Topik Aktif</h3>
+        <span class="pill">Topik SEO</span>
+        <h3 style="margin:10px 0 16px;">Tema Aktif</h3>
+
+        <form method="POST" action="{{ route('admin.seo.topics.store') }}" class="stack" style="margin-bottom:18px;">
+            @csrf
+            <select name="category" required>
+                <option value="">Tambah tema baru</option>
+                @foreach ($themes as $key => $theme)
+                    <option value="{{ $key }}">{{ $theme['label'] }}</option>
+                @endforeach
+            </select>
+            <label class="inline" style="justify-content:flex-start;">
+                <input style="width:auto;" type="checkbox" name="is_active" value="1" checked>
+                <span>Aktif untuk generator</span>
+            </label>
+            <button type="submit">Simpan Tema</button>
+        </form>
+
         <div class="table-wrap">
             <table class="table">
                 <thead>
@@ -105,7 +167,6 @@
                         <th>Tema</th>
                         <th>Keyword Aktif</th>
                         <th>Intent</th>
-                        <th>Terakhir Generate</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -134,7 +195,6 @@
                         </td>
                         <td>{{ $topic->keyword ?: '-' }}</td>
                         <td>{{ ucfirst($topic->search_intent) }}</td>
-                        <td>{{ optional($topic->last_generated_at)->format('d M Y H:i') ?: '-' }}</td>
                         <td>
                             <form method="POST" action="{{ route('admin.seo.topics.destroy', $topic) }}">
                                 @csrf
@@ -144,7 +204,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="muted">Belum ada tema SEO.</td></tr>
+                    <tr><td colspan="4" class="muted">Belum ada tema aktif.</td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -152,77 +212,93 @@
     </section>
 
     <section class="panel">
-        <span class="pill">Affiliate</span>
-        <h3 style="margin:10px 0 16px;">Banner Tersimpan</h3>
-        <div class="table-wrap">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Banner</th>
-                        <th>Placement</th>
-                        <th>CTA</th>
-                        <th>Bobot</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @forelse ($banners as $banner)
-                    <tr>
-                        <td>
-                            <form method="POST" action="{{ route('admin.seo.banners.update', $banner) }}" class="stack">
-                                @csrf
-                                @method('PUT')
-                                <input type="text" name="name" value="{{ $banner->name }}" required>
-                                <select name="placement" required>
-                                    @foreach (['home_hero', 'article_header', 'article_inline', 'article_footer'] as $placement)
-                                        <option value="{{ $placement }}" @selected($banner->placement === $placement)>{{ $placement }}</option>
-                                    @endforeach
-                                </select>
-                                <input type="url" name="image_url" value="{{ $banner->image_url }}" required>
-                                <input type="url" name="target_url" value="{{ $banner->target_url }}" required>
-                                <label class="inline" style="justify-content:flex-start;">
-                                    <input style="width:auto;" type="checkbox" name="is_active" value="1" @checked($banner->is_active)>
-                                    <span>Aktif</span>
-                                </label>
-                                <button type="submit">Update Banner</button>
-                            </form>
-                        </td>
-                        <td>{{ $banner->placement }}</td>
-                        <td>
-                            <form method="POST" action="{{ route('admin.seo.banners.update', $banner) }}" class="stack">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="name" value="{{ $banner->name }}">
-                                <input type="hidden" name="placement" value="{{ $banner->placement }}">
-                                <input type="hidden" name="image_url" value="{{ $banner->image_url }}">
-                                <input type="hidden" name="target_url" value="{{ $banner->target_url }}">
-                                <input type="text" name="cta_text" value="{{ $banner->cta_text }}" placeholder="CTA opsional">
-                                <input type="number" name="weight" value="{{ $banner->weight }}" min="1" max="100">
-                                <input type="hidden" name="is_active" value="{{ $banner->is_active ? 1 : 0 }}">
-                                <button type="submit" class="alt">Simpan CTA/Bobot</button>
-                            </form>
-                        </td>
-                        <td>{{ $banner->weight }}</td>
-                        <td>
-                            <form method="POST" action="{{ route('admin.seo.banners.destroy', $banner) }}">
+        <span class="pill">Library Gambar</span>
+        <h3 style="margin:10px 0 16px;">Gambar per Kategori</h3>
+
+        @foreach ($themes as $key => $theme)
+            <div class="card-note" style="margin-bottom:14px;">
+                <strong>{{ $theme['label'] }}</strong>
+                <div class="muted" style="margin:6px 0 12px;">{{ $theme['description'] }}</div>
+
+                <div class="grid grid-3">
+                    @forelse ($articleImagesByCategory[$key] ?? [] as $image)
+                        <div style="padding:12px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(101,73,48,.12);">
+                            <img src="{{ $image['url'] }}" alt="{{ $image['name'] }}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;border:1px solid rgba(101,73,48,.12);">
+                            <div class="muted" style="margin-top:10px;font-size:.88rem;word-break:break-word;">{{ $image['name'] }}</div>
+                            <form method="POST" action="{{ route('admin.seo.media.article-images.destroy') }}" style="margin-top:10px;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="danger">Hapus</button>
+                                <input type="hidden" name="path" value="{{ $image['path'] }}">
+                                <button type="submit" class="danger">Hapus Gambar</button>
                             </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="5" class="muted">Belum ada banner.</td></tr>
-                @endforelse
-                </tbody>
-            </table>
-        </div>
+                        </div>
+                    @empty
+                        <div class="muted">Belum ada gambar untuk kategori ini.</div>
+                    @endforelse
+                </div>
+            </div>
+        @endforeach
     </section>
 </div>
 
 <section class="panel" style="margin-top:18px;">
-    <span class="pill">Editorial</span>
-    <h3 style="margin:10px 0 16px;">Artikel Terbaru</h3>
+    <span class="pill">Placement Affiliate</span>
+    <h3 style="margin:10px 0 16px;">Link dan CTA Tersimpan</h3>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Placement</th>
+                    <th>Target</th>
+                    <th>Bobot</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+            @forelse ($banners as $banner)
+                <tr>
+                    <td>{{ $banner->name }}</td>
+                    <td>{{ $banner->placement }}</td>
+                    <td style="min-width:320px;">
+                        <form method="POST" action="{{ route('admin.seo.banners.update', $banner) }}" class="stack">
+                            @csrf
+                            @method('PUT')
+                            <input type="text" name="name" value="{{ $banner->name }}" required>
+                            <input type="hidden" name="placement" value="{{ $banner->placement }}">
+                            <input type="url" name="image_url" value="{{ $banner->image_url }}" placeholder="URL gambar opsional">
+                            <input type="url" name="target_url" value="{{ $banner->target_url }}" required>
+                            <div class="inline">
+                                <input type="text" name="cta_text" value="{{ $banner->cta_text }}" placeholder="CTA opsional">
+                                <input type="number" name="weight" value="{{ $banner->weight }}" min="1" max="100">
+                            </div>
+                            <label class="inline" style="justify-content:flex-start;">
+                                <input style="width:auto;" type="checkbox" name="is_active" value="1" @checked($banner->is_active)>
+                                <span>Aktif</span>
+                            </label>
+                            <button type="submit">Update Placement</button>
+                        </form>
+                    </td>
+                    <td>{{ $banner->weight }}</td>
+                    <td>
+                        <form method="POST" action="{{ route('admin.seo.banners.destroy', $banner) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="danger">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="5" class="muted">Belum ada placement affiliate.</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel" style="margin-top:18px;">
+    <span class="pill">Artikel</span>
+    <h3 style="margin:10px 0 16px;">Editorial Terbaru</h3>
     <div class="table-wrap">
         <table class="table">
             <thead>
@@ -237,7 +313,7 @@
             <tbody>
             @forelse ($articles as $article)
                 <tr>
-                    <td>
+                    <td style="min-width:420px;">
                         <form method="POST" action="{{ route('admin.seo.articles.update', $article) }}" class="stack">
                             @csrf
                             @method('PUT')
@@ -245,6 +321,8 @@
                             <input type="text" name="meta_description" value="{{ $article->meta_description }}" required>
                             <textarea name="excerpt" rows="2">{{ $article->excerpt }}</textarea>
                             <textarea name="content_html" rows="10" required>{{ $article->content_html }}</textarea>
+                            <textarea name="source_references_text" rows="4" placeholder="Judul | Penerbit | URL | Tahun">@foreach ($article->source_references ?? [] as $reference){{ ($reference['title'] ?? '') }} | {{ ($reference['publisher'] ?? '') }} | {{ ($reference['url'] ?? '') }} | {{ ($reference['year'] ?? '') }}
+@endforeach</textarea>
                             <select name="status" required>
                                 <option value="draft" @selected($article->status === 'draft')>draft</option>
                                 <option value="published" @selected($article->status === 'published')>published</option>

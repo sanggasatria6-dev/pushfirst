@@ -16,7 +16,7 @@ class StoreAffiliateBannerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:120'],
             'placement' => ['required', 'in:home_hero,article_header,article_inline,article_footer'],
-            'image_url' => ['required', 'url'],
+            'image_url' => ['nullable', 'url'],
             'target_url' => ['required', 'url'],
             'cta_text' => ['nullable', 'string', 'max:80'],
             'weight' => ['nullable', 'integer', 'between:1,100'],

@@ -14,8 +14,8 @@ class DispatchSeoArticlesCommand extends Command
 
     public function handle(VertexSeoFactoryService $service): int
     {
-        $min = (int) config('portal.seo.daily_min_articles', 5);
-        $max = (int) config('portal.seo.daily_max_articles', 7);
+        $min = (int) config('portal.seo.daily_min_articles', 12);
+        $max = (int) config('portal.seo.daily_max_articles', 18);
         $configuredLimit = config('portal.seo.dispatch_limit_per_run');
         $limit = $this->option('limit') !== null
             ? (int) $this->option('limit')

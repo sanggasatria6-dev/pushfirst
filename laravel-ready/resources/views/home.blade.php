@@ -3,183 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'SerbaInfo') }}</title>
-    <meta name="description" content="Portal informasi, aplikasi, dan referensi digital.">
+    <title>{{ $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar') }}</title>
+    <meta name="description" content="{{ $homepageSettings['hero_description'] ?? 'Portal editorial olahraga, IT, dan hidroponik.' }}">
     <meta name="robots" content="index,follow">
     <link rel="canonical" href="{{ url()->current() }}">
     <style>
         :root {
-            --bg: #efe5d8;
-            --surface: rgba(251, 246, 239, 0.86);
-            --surface-strong: #fffaf3;
-            --line: rgba(103, 74, 49, 0.16);
-            --line-strong: rgba(103, 74, 49, 0.28);
-            --text: #24170f;
-            --muted: #6b584a;
-            --accent: #4f6b3c;
-            --accent-strong: #32482a;
-            --accent-soft: #e6ecd8;
-            --warm: #b16a3b;
-            --warm-deep: #8f4e2d;
-            --warm-soft: #f7e5d4;
-            --shadow: 0 30px 80px rgba(62, 38, 19, 0.12);
+            --bg: #f8f6f1;
+            --surface: #ffffff;
+            --surface-soft: #f2efe8;
+            --line: #d8d1c3;
+            --text: #1f1f1b;
+            --muted: #6a665d;
+            --accent: #1f5c4d;
+            --accent-strong: #163f36;
+            --accent-soft: #deeee8;
+            --warm: #ae6c32;
+            --warm-soft: #f8ead8;
+            --shadow: 0 18px 44px rgba(18, 28, 24, 0.08);
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body {
             margin: 0;
             color: var(--text);
-            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+            font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
             background:
-                radial-gradient(circle at top left, rgba(177, 106, 59, 0.16), transparent 30%),
-                radial-gradient(circle at top right, rgba(79, 107, 60, 0.16), transparent 24%),
-                linear-gradient(180deg, #f8f0e6 0%, var(--bg) 100%);
+                radial-gradient(circle at top right, rgba(31, 92, 77, 0.08), transparent 24%),
+                radial-gradient(circle at top left, rgba(174, 108, 50, 0.09), transparent 22%),
+                linear-gradient(180deg, #fbfaf6 0%, var(--bg) 100%);
         }
         a { color: inherit; text-decoration: none; }
-        .page { width: min(1200px, calc(100vw - 32px)); margin: 0 auto; padding: 24px 0 72px; }
+        .page { width: min(1180px, calc(100vw - 32px)); margin: 0 auto; padding: 24px 0 72px; }
+        .topbar, .brand, .nav, .hero-actions, .stat-row, .footer {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
         .topbar {
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 20px;
-            padding: 18px 0 28px;
+            gap: 18px;
+            padding-bottom: 26px;
         }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .brand-mark {
-            width: 48px;
-            height: 48px;
+        .brand { gap: 14px; }
+        .logo-box {
+            width: 52px;
+            height: 52px;
             display: grid;
             place-items: center;
             border-radius: 16px;
-            color: #fff;
-            font-weight: 700;
-            background: linear-gradient(145deg, var(--accent), var(--warm));
+            border: 1px solid var(--line);
+            background: var(--surface);
             box-shadow: var(--shadow);
+            overflow: hidden;
         }
-        .brand-copy strong { display: block; font-size: 1.05rem; }
-        .brand-copy span { color: var(--muted); font-size: .95rem; }
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 6px;
+        }
+        .logo-fallback {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-strong);
+        }
+        .brand-copy strong {
+            display: block;
+            font-size: 1.05rem;
+        }
+        .brand-copy span {
+            color: var(--muted);
+            font-size: .95rem;
+        }
         .nav {
-            display: flex;
             gap: 10px;
-            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         .nav a {
             padding: 10px 14px;
             border-radius: 999px;
             border: 1px solid var(--line);
-            background: rgba(255, 250, 244, 0.72);
+            background: rgba(255, 255, 255, 0.78);
         }
         .hero {
             display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
+            grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
             gap: 22px;
-            align-items: stretch;
         }
-        .hero-main, .hero-side, .section-card, .article-card, .micro-card {
+        .hero-main, .hero-side, .section-card, .article-card, .topic-card, .tool-card {
             border: 1px solid var(--line);
-            border-radius: 30px;
-            background: var(--surface);
-            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.88);
             box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
         }
         .hero-main {
-            position: relative;
-            overflow: hidden;
             padding: 34px;
             background:
-                linear-gradient(145deg, rgba(255, 250, 244, 0.97), rgba(242, 230, 214, 0.92));
-        }
-        .hero-main::after {
-            content: "";
-            position: absolute;
-            inset: auto -60px -80px auto;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(79, 107, 60, 0.22), transparent 68%);
-        }
-        .hero-main::before {
-            content: "";
-            position: absolute;
-            inset: 18px 18px auto auto;
-            width: 110px;
-            height: 110px;
-            border-radius: 28px;
-            border: 1px solid rgba(177, 106, 59, 0.14);
-            background: linear-gradient(145deg, rgba(255,255,255,.38), rgba(255,255,255,0));
-            transform: rotate(14deg);
+                linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(242, 239, 232, 0.94));
         }
         .eyebrow {
             display: inline-flex;
-            align-items: center;
-            gap: 8px;
             padding: 8px 12px;
             border-radius: 999px;
-            background: var(--warm-soft);
-            color: var(--warm-deep);
+            background: var(--accent-soft);
+            color: var(--accent-strong);
             font-size: 12px;
             font-weight: 700;
-            letter-spacing: .12em;
+            letter-spacing: .1em;
             text-transform: uppercase;
         }
         h1 {
-            margin: 18px 0 14px;
-            max-width: 10.5ch;
-            font-size: clamp(2.4rem, 5vw, 4.8rem);
+            margin: 16px 0 14px;
+            max-width: 11ch;
+            font-size: clamp(2.5rem, 5vw, 4.8rem);
             line-height: .96;
         }
         .lead {
-            max-width: 58ch;
+            max-width: 60ch;
             color: var(--muted);
             font-size: 1.08rem;
-            line-height: 1.75;
-        }
-        .hero-meta {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
-            margin: 28px 0;
-        }
-        .metric {
-            padding: 16px;
-            border-radius: 20px;
-            background: linear-gradient(145deg, rgba(255, 250, 244, 0.88), rgba(245, 236, 225, 0.64));
-            border: 1px solid rgba(103, 74, 49, 0.12);
-        }
-        .metric strong {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 1.55rem;
+            line-height: 1.8;
         }
         .hero-actions {
-            display: flex;
-            flex-wrap: wrap;
             gap: 12px;
+            margin-top: 24px;
         }
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 14px 18px;
+            padding: 13px 18px;
             border-radius: 16px;
             font-weight: 700;
-            transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
         }
-        .btn:hover { transform: translateY(-2px); }
         .btn-primary {
             color: #fff;
-            background: linear-gradient(135deg, var(--accent-strong), var(--accent), #6d8759);
-            box-shadow: 0 16px 36px rgba(50, 72, 42, 0.28);
+            background: linear-gradient(135deg, var(--accent-strong), var(--accent));
         }
         .btn-secondary {
-            border: 1px solid var(--line-strong);
-            background: rgba(255, 250, 244, 0.76);
-            color: var(--text);
+            border: 1px solid var(--line);
+            background: var(--surface);
+        }
+        .stat-row {
+            gap: 12px;
+            margin-top: 28px;
+        }
+        .stat {
+            min-width: 150px;
+            padding: 16px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: var(--surface-soft);
+        }
+        .stat strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.5rem;
         }
         .hero-side {
             padding: 18px;
@@ -187,23 +168,22 @@
             gap: 14px;
             align-content: start;
             background:
-                linear-gradient(180deg, rgba(255, 249, 242, 0.94), rgba(239, 229, 216, 0.9));
+                linear-gradient(180deg, rgba(248, 250, 247, 0.95), rgba(245, 240, 232, 0.92));
         }
-        .banner-card {
-            display: grid;
-            gap: 14px;
-            padding: 16px;
+        .focus-card {
+            padding: 18px;
             border-radius: 22px;
-            background: var(--surface-strong);
             border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.9);
         }
-        .banner-card img {
-            width: 100%;
+        .focus-card strong {
             display: block;
-            border-radius: 18px;
-            object-fit: cover;
+            margin-bottom: 6px;
+            font-size: 1.02rem;
         }
-        .banner-card p, .section-head p, .micro-card p, .article-card p, .muted { color: var(--muted); }
+        .focus-card p, .section-head p, .article-card p, .tool-card p, .topic-card p, .footer, .muted {
+            color: var(--muted);
+        }
         .section {
             margin-top: 34px;
         }
@@ -214,64 +194,93 @@
             display: flex;
             align-items: end;
             justify-content: space-between;
-            gap: 20px;
+            gap: 18px;
             margin-bottom: 18px;
         }
         .section-head h2 {
-            margin: 8px 0 0;
-            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            margin: 10px 0 0;
+            font-size: clamp(1.9rem, 3vw, 2.8rem);
         }
-        .micro-grid, .article-grid {
+        .article-grid {
             display: grid;
             gap: 18px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
-        .micro-card, .article-card {
-            padding: 22px;
+        .article-card {
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            background: linear-gradient(180deg, rgba(255, 251, 246, 0.78), rgba(245, 235, 222, 0.68));
+        }
+        .article-card img {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            display: block;
+            border-bottom: 1px solid var(--line);
+        }
+        .article-copy {
+            padding: 18px;
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .article-copy h3 {
+            margin: 0;
+            font-size: 1.28rem;
+            line-height: 1.28;
+        }
+        .article-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: .92rem;
+            color: var(--muted);
         }
         .tag {
             display: inline-flex;
             width: fit-content;
-            padding: 8px 12px;
+            padding: 7px 11px;
             border-radius: 999px;
-            background: linear-gradient(135deg, var(--accent-soft), #f0e7d0);
-            color: #39522f;
+            background: var(--warm-soft);
+            color: var(--warm);
             font-size: 12px;
             font-weight: 700;
             letter-spacing: .06em;
             text-transform: uppercase;
         }
-        .micro-card h3, .article-card h3 {
-            margin: 0;
-            font-size: 1.35rem;
-            line-height: 1.2;
-        }
-        .article-meta {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-            font-size: .94rem;
-            color: var(--muted);
-        }
-        .empty {
-            min-height: 220px;
+        .topic-grid, .tool-grid {
             display: grid;
-            place-items: center;
-            text-align: center;
-            border: 1px dashed var(--line-strong);
-            border-radius: 24px;
-            color: var(--muted);
-            background: rgba(255, 248, 240, 0.52);
+            gap: 18px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
-        @media (max-width: 980px) {
-            .hero, .micro-grid, .article-grid, .hero-meta { grid-template-columns: 1fr; }
-            .section-head, .topbar { align-items: start; flex-direction: column; }
+        .topic-card, .tool-card {
+            padding: 22px;
+        }
+        .topic-card h3, .tool-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.22rem;
+        }
+        .footer {
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 36px;
+            padding: 18px 0 0;
+        }
+        @media (max-width: 1080px) {
+            .article-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .topic-grid, .tool-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 920px) {
+            .hero { grid-template-columns: 1fr; }
             h1 { max-width: none; }
+        }
+        @media (max-width: 720px) {
+            .page { width: min(100vw - 20px, 1180px); }
+            .article-grid { grid-template-columns: 1fr; }
+            .section-head, .topbar { align-items: flex-start; flex-direction: column; }
         }
     </style>
 </head>
@@ -279,122 +288,155 @@
     <div class="page">
         <header class="topbar">
             <div class="brand">
-                <div class="brand-mark">SP</div>
+                <div class="logo-box">
+                    @if (!empty($portalBranding['logo_url']))
+                        <img src="{{ $portalBranding['logo_url'] }}" alt="{{ $portalBranding['logo_alt'] ?? $portalBranding['site_name'] }}">
+                    @else
+                        <span class="logo-fallback">{{ $portalBranding['mark_text'] ?? 'AN' }}</span>
+                    @endif
+                </div>
                 <div class="brand-copy">
-                    <strong>{{ config('app.name', 'SerbaInfo Portal') }}</strong>
-                    <span>Portal informasi, aplikasi, dan referensi digital.</span>
+                    <strong>{{ $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar') }}</strong>
+                    <span>{{ $portalBranding['tagline'] ?? 'Portal editorial olahraga, IT, dan hidroponik.' }}</span>
                 </div>
             </div>
+
             <nav class="nav">
-                <a href="#microsaas">Micro-SaaS</a>
-                <a href="#articles">Artikel</a>
+                <a href="#artikel">Artikel</a>
+                <a href="#fokus">Fokus Topik</a>
+                <a href="#tools">Tools</a>
                 <a href="{{ route('home') }}">Home</a>
             </nav>
         </header>
 
         <section class="hero">
             <div class="hero-main">
-                <div class="eyebrow">SerbaInfo</div>
-                <h1>Informasi, aplikasi, dan referensi digital dalam satu portal.</h1>
-                <p class="lead">Portal ini memuat artikel, katalog aplikasi, dan materi promosi yang ditampilkan dalam struktur yang rapi dan mudah diakses.</p>
-
-                <div class="hero-meta">
-                    <div class="metric">
-                        <strong>{{ $featuredMicrosaas->count() }}</strong>
-                        <span class="muted">Micro-SaaS aktif</span>
-                    </div>
-                    <div class="metric">
-                        <strong>{{ $latestArticles->count() }}</strong>
-                        <span class="muted">Artikel terbaru</span>
-                    </div>
-                    <div class="metric">
-                        <strong>{{ $heroBanner ? '1' : '0' }}</strong>
-                        <span class="muted">Banner aktif</span>
-                    </div>
-                </div>
+                <span class="eyebrow">Portal Editorial</span>
+                <h1>{{ $homepageSettings['hero_title'] ?? 'Olahraga, IT, dan hidroponik dalam satu arus konten.' }}</h1>
+                <p class="lead">{{ $homepageSettings['hero_description'] ?? 'Produksi artikel ber-volume tinggi tetap harus punya arah, gambar yang konsisten, dan ruang affiliate yang tidak merusak pengalaman baca.' }}</p>
 
                 <div class="hero-actions">
-                    @if ($heroBanner)
-                        <a href="{{ $heroBanner->target_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-primary">
-                            {{ $heroBanner->cta_text ?: 'Lihat Penawaran Pilihan' }}
-                        </a>
-                    @endif
-                    <a href="#microsaas" class="btn btn-secondary">Jelajahi katalog</a>
+                    <a href="#artikel" class="btn btn-primary">Baca Artikel Terbaru</a>
+                    <a href="{{ route('admin.seo.index') }}" class="btn btn-secondary">Kelola Konten</a>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat">
+                        <strong>{{ $articleCount }}</strong>
+                        <span class="muted">Artikel publish</span>
+                    </div>
+                    <div class="stat">
+                        <strong>{{ count($themeLabels) }}</strong>
+                        <span class="muted">Pilar konten</span>
+                    </div>
+                    <div class="stat">
+                        <strong>{{ $featuredMicrosaas->count() }}</strong>
+                        <span class="muted">Tools aktif</span>
+                    </div>
                 </div>
             </div>
 
-            <aside class="hero-side">
-                @if ($heroBanner)
-                    <a href="{{ $heroBanner->target_url }}" target="_blank" rel="nofollow sponsored" class="banner-card">
-                        <img src="{{ $heroBanner->image_url }}" alt="{{ $heroBanner->name }}">
-                        <div>
-                            <strong>{{ $heroBanner->name }}</strong>
-                            <p>{{ $heroBanner->cta_text ?: 'Materi promosi aktif.' }}</p>
-                        </div>
-                    </a>
-                @else
-                    <div class="banner-card">
-                        <strong>Belum ada banner aktif</strong>
-                        <p>Tambahkan banner affiliate pada placement `home_hero` untuk menampilkan materi promosi pada area ini.</p>
+            <aside class="hero-side" id="fokus">
+                @foreach ($themeLabels as $key => $label)
+                    <div class="focus-card">
+                        <strong>{{ $label }}</strong>
+                        <p>{{ $themeDescriptions[$key] ?? 'Tema aktif untuk mesin produksi artikel.' }}</p>
                     </div>
-                @endif
-                <div class="banner-card">
-                    <strong>Informasi portal</strong>
-                    <p>Halaman ini menampilkan artikel terbaru, aplikasi aktif, dan banner promosi.</p>
-                </div>
+                @endforeach
             </aside>
         </section>
 
-        <section id="microsaas" class="section">
+        <section id="artikel" class="section">
             <div class="section-card">
                 <div class="section-head">
                     <div>
-                        <div class="eyebrow">Katalog</div>
-                        <h2>Micro-SaaS Aktif</h2>
+                        <span class="eyebrow">Artikel Hari Ini</span>
+                        <h2>Konten terbaru yang siap dibaca</h2>
                     </div>
-                    <p>Aplikasi yang tersedia untuk diakses melalui portal.</p>
+                    <p>Tiap artikel tampil dengan satu cover image dan arah editorial yang lebih spesifik.</p>
                 </div>
-                <div class="micro-grid">
-                    @forelse ($featuredMicrosaas as $item)
-                        <article class="micro-card">
-                            <span class="tag">{{ $item->price_label ?: 'Micro-SaaS' }}</span>
-                            <h3>{{ $item->name }}</h3>
-                            <p>{{ $item->tagline ?: $item->description }}</p>
-                            <a class="btn btn-primary" href="{{ $item->frontend_entry_url }}" target="_blank">Buka App</a>
+
+                <div class="article-grid">
+                    @forelse ($latestArticles as $article)
+                        <article class="article-card">
+                            <img src="{{ route('articles.cover', $article) }}" alt="{{ $article->title }}" loading="lazy">
+                            <div class="article-copy">
+                                <span class="tag">{{ $themeLabels[$article->topic?->category ?? ''] ?? 'Editorial' }}</span>
+                                <h3>{{ $article->title }}</h3>
+                                <p>{{ $article->excerpt }}</p>
+                                <div class="article-meta">
+                                    <span>{{ optional($article->published_at)->format('d M Y') }}</span>
+                                    <a href="{{ route('articles.show', $article) }}">Baca selengkapnya</a>
+                                </div>
+                            </div>
                         </article>
                     @empty
-                        <div class="empty">Belum ada Micro-SaaS aktif.</div>
+                        <div class="topic-card">
+                            <h3>Belum ada artikel publish.</h3>
+                            <p>Masuk ke panel admin lalu jalankan generator atau input artikel manual.</p>
+                        </div>
                     @endforelse
                 </div>
             </div>
         </section>
 
-        <section id="articles" class="section">
+        <section class="section">
             <div class="section-card">
                 <div class="section-head">
                     <div>
-                        <div class="eyebrow">Editorial</div>
-                        <h2>Artikel SEO Terbaru</h2>
+                        <span class="eyebrow">Peta Konten</span>
+                        <h2>Arah portal yang baru</h2>
                     </div>
-                    <p>Artikel terbaru yang telah dipublikasikan.</p>
+                    <p>Olahraga jadi arus utama, IT tetap hidup, dan hidroponik tidak dibuang.</p>
                 </div>
-                <div class="article-grid">
-                    @forelse ($latestArticles as $article)
-                        <article class="article-card">
-                            <div class="article-meta">
-                                <span>{{ optional($article->published_at)->format('d M Y') }}</span>
-                                <span>{{ $article->generation_model ?: 'Editorial' }}</span>
-                            </div>
-                            <h3>{{ $article->title }}</h3>
-                            <p>{{ $article->excerpt }}</p>
-                            <a class="btn btn-secondary" href="{{ route('articles.show', $article) }}">Baca Artikel</a>
+
+                <div class="topic-grid">
+                    @foreach ($themeLabels as $key => $label)
+                        <article class="topic-card">
+                            <span class="tag">{{ $label }}</span>
+                            <h3>{{ $label }}</h3>
+                            <p>{{ $themeDescriptions[$key] ?? 'Tema ini aktif untuk produksi konten.' }}</p>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section id="tools" class="section">
+            <div class="section-card">
+                <div class="section-head">
+                    <div>
+                        <span class="eyebrow">Tools & App</span>
+                        <h2>Ruang untuk aplikasi dan eksperimen</h2>
+                    </div>
+                    <p>Masih tersedia jika Anda ingin menaruh tool, mini app, atau eksperimen digital lain.</p>
+                </div>
+
+                <div class="tool-grid">
+                    @forelse ($featuredMicrosaas as $item)
+                        <article class="tool-card">
+                            <span class="tag">{{ $item->price_label ?: 'Tool' }}</span>
+                            <h3>{{ $item->name }}</h3>
+                            <p>{{ $item->tagline ?: $item->description }}</p>
+                            <a class="btn btn-secondary" href="{{ $item->frontend_entry_url }}" target="_blank">Buka Tool</a>
                         </article>
                     @empty
-                        <div class="empty">Belum ada artikel publish.</div>
+                        <article class="tool-card">
+                            <h3>Belum ada tools aktif.</h3>
+                            <p>Bagian ini aman dibiarkan kosong atau diisi kemudian saat Anda menambah app sendiri.</p>
+                        </article>
                     @endforelse
                 </div>
             </div>
         </section>
+
+        <footer class="footer">
+            <div>
+                <strong>{{ $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar') }}</strong>
+                <div class="muted">{{ $homepageSettings['footer_note'] ?? 'Portal editorial untuk olahraga, IT, dan hidroponik.' }}</div>
+            </div>
+            <div class="muted">Copyright &copy; {{ now()->year }}</div>
+        </footer>
     </div>
 </body>
 </html>

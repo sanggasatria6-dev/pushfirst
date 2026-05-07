@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSeoTopicRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class StoreSeoTopicRequest extends FormRequest
     {
         return [
             'keyword' => ['nullable', 'string', 'max:160'],
-            'category' => ['required', 'in:urban_farming,informatics_learning,business_growth'],
+            'category' => ['required', Rule::in(config('portal.seo.allowed_categories', []))],
             'search_intent' => ['nullable', 'in:informational,commercial,transactional,navigational'],
             'language' => ['nullable', 'string', 'max:12'],
             'country_code' => ['nullable', 'string', 'size:2'],

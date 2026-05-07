@@ -10,13 +10,16 @@ class DemoPortalSeeder extends Seeder
 {
     public function run(): void
     {
+        ArticleTopic::query()
+            ->whereNotIn('category', config('portal.seo.allowed_categories', []))
+            ->delete();
+
         $topics = [
-            ['keyword' => 'cara memilih tools SEO untuk bisnis kecil', 'search_intent' => 'commercial', 'category' => 'buyer_guides'],
-            ['keyword' => 'perbandingan database mysql vs postgresql untuk pemula', 'search_intent' => 'informational', 'category' => 'informatics_learning'],
-            ['keyword' => 'pengertian iot dan contoh implementasinya di industri', 'search_intent' => 'informational', 'category' => 'iot'],
-            ['keyword' => 'rekomendasi laptop coding untuk mahasiswa informatika', 'search_intent' => 'commercial', 'category' => 'buyer_guides'],
-            ['keyword' => 'belajar normalisasi database dengan contoh sederhana', 'search_intent' => 'informational', 'category' => 'informatics_learning'],
-            ['keyword' => 'sensor iot untuk monitoring suhu ruangan', 'search_intent' => 'commercial', 'category' => 'iot'],
+            ['keyword' => 'teknik footwork badminton untuk pemula', 'search_intent' => 'informational', 'category' => 'sports_training'],
+            ['keyword' => 'cara memilih lapangan badminton terdekat yang bagus', 'search_intent' => 'commercial', 'category' => 'sports_places'],
+            ['keyword' => 'cara memilih raket badminton untuk intermediate', 'search_intent' => 'commercial', 'category' => 'sports_gear'],
+            ['keyword' => 'cara deploy laravel ke vps dengan aman', 'search_intent' => 'informational', 'category' => 'it_insights'],
+            ['keyword' => 'cara menanam selada hidroponik untuk pemula', 'search_intent' => 'informational', 'category' => 'hydroponics'],
         ];
 
         foreach ($topics as $topic) {
@@ -34,34 +37,15 @@ class DemoPortalSeeder extends Seeder
 
         $banners = [
             [
-                'name' => 'Top Up Diamond Hero',
-                'placement' => 'home_hero',
-                'image_url' => 'https://via.placeholder.com/1200x628?text=Top+Up+Diamond',
-                'target_url' => 'https://affiliate.example.com/topup-diamond',
-                'cta_text' => 'Top Up Sekarang',
-            ],
-            [
-                'name' => 'Banner Header Tech',
-                'placement' => 'article_header',
-                'image_url' => 'https://via.placeholder.com/1200x400?text=Tech+Affiliate',
-                'target_url' => 'https://affiliate.example.com/tech',
-                'cta_text' => 'Cek Promo',
-            ],
-            [
-                'name' => 'Banner Inline Tools',
+                'name' => 'Rekomendasi Partner Olahraga',
                 'placement' => 'article_inline',
-                'image_url' => 'https://via.placeholder.com/1200x400?text=Tools+Affiliate',
-                'target_url' => 'https://affiliate.example.com/tools',
-                'cta_text' => 'Lihat Tools',
-            ],
-            [
-                'name' => 'Banner Footer Gaming',
-                'placement' => 'article_footer',
-                'image_url' => 'https://via.placeholder.com/1200x400?text=Gaming+Affiliate',
-                'target_url' => 'https://affiliate.example.com/gaming',
-                'cta_text' => 'Ambil Penawaran',
+                'image_url' => null,
+                'target_url' => 'https://affiliate.example.com/sports-gear',
+                'cta_text' => 'Cek Rekomendasi',
             ],
         ];
+
+        AffiliateBanner::query()->delete();
 
         foreach ($banners as $banner) {
             AffiliateBanner::updateOrCreate(

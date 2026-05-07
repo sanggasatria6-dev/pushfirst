@@ -2,28 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AffiliateBanner;
 use App\Models\Article;
 use App\Models\Microsaas;
+use App\Services\VertexSeoFactoryService;
+use App\Support\PortalSettings;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(): View
+    public function index(VertexSeoFactoryService $seoFactory, PortalSettings $settings): View
     {
+        $articles = Article::query()
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->limit(8)
+            ->get();
+
         return view('home', [
-            'heroBanner' => AffiliateBanner::pickOneForPlacement('home_hero'),
             'featuredMicrosaas' => Microsaas::query()
                 ->where('status', 'active')
                 ->orderByDesc('is_featured')
                 ->latest()
-                ->limit(12)
-                ->get(),
-            'latestArticles' => Article::query()
-                ->where('status', 'published')
-                ->latest('published_at')
                 ->limit(6)
                 ->get(),
+            'latestArticles' => $articles,
+            'articleCount' => Article::query()->where('status', 'published')->count(),
+            'themeLabels' => collect($seoFactory->themeOptions())->mapWithKeys(
+                fn (array $theme, string $key) => [$key => $theme['label'] ?? $key]
+            )->all(),
+            'themeDescriptions' => collect($seoFactory->themeOptions())->mapWithKeys(
+                fn (array $theme, string $key) => [$key => $theme['description'] ?? null]
+            )->all(),
+            'portalBranding' => $settings->branding(),
+            'homepageSettings' => $settings->homepage(),
         ]);
     }
 }

@@ -7,13 +7,17 @@ use Illuminate\Console\Command;
 
 class GenerateSeoArticlesCommand extends Command
 {
-    protected $signature = 'seo:generate-daily {--limit=5}';
+    protected $signature = 'seo:generate-daily {--limit=}';
 
-    protected $description = 'Generate artikel SEO harian dari topik aktif menggunakan Vertex API.';
+    protected $description = 'Generate batch artikel editorial dari topik aktif menggunakan Vertex API.';
 
     public function handle(VertexSeoFactoryService $service): int
     {
-        $count = $service->generateDailyBatch((int) $this->option('limit'));
+        $limit = $this->option('limit') !== null
+            ? (int) $this->option('limit')
+            : (int) config('portal.vertex.articles_per_run', 12);
+
+        $count = $service->generateDailyBatch($limit);
 
         $this->info("{$count} artikel dibuat.");
 

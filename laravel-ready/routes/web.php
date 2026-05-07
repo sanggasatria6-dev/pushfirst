@@ -68,6 +68,11 @@ Route::prefix($adminPath)->name('admin.')->group(function () {
         Route::post('/seo/banners', [SeoFactoryController::class, 'storeBanner'])->name('seo.banners.store');
         Route::put('/seo/banners/{banner}', [SeoFactoryController::class, 'updateBanner'])->name('seo.banners.update');
         Route::delete('/seo/banners/{banner}', [SeoFactoryController::class, 'destroyBanner'])->name('seo.banners.destroy');
+        Route::put('/seo/branding', [SeoFactoryController::class, 'updateBranding'])->name('seo.branding.update');
+        Route::post('/seo/branding/logo', [SeoFactoryController::class, 'uploadLogo'])->name('seo.branding.logo.store');
+        Route::delete('/seo/branding/logo', [SeoFactoryController::class, 'destroyLogo'])->name('seo.branding.logo.destroy');
+        Route::post('/seo/media/article-images', [SeoFactoryController::class, 'uploadArticleImages'])->name('seo.media.article-images.store');
+        Route::delete('/seo/media/article-images', [SeoFactoryController::class, 'destroyArticleImage'])->name('seo.media.article-images.destroy');
         Route::post('/seo/generate', [SeoFactoryController::class, 'generate'])->name('seo.generate');
         Route::put('/seo/articles/{article}', [SeoFactoryController::class, 'updateArticle'])->name('seo.articles.update');
         Route::delete('/seo/articles/{article}', [SeoFactoryController::class, 'destroyArticle'])->name('seo.articles.destroy');

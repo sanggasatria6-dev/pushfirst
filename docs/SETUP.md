@@ -1,58 +1,87 @@
-# Setup Laravel
+# Setup Portal Editorial
 
-Dokumen ini mengasumsikan Anda membuat project baru, misalnya:
+Dokumen ini mengasumsikan Anda membuat project Laravel baru, lalu menyalin isi `laravel-ready/` ke root project tersebut.
+
+## 1. Buat project Laravel
 
 ```bash
-composer create-project laravel/laravel mega-portal
+composer create-project laravel/laravel portal-editorial
+cd portal-editorial
 ```
 
-Lalu salin isi folder `laravel-ready/` ke root project Laravel Anda.
+Salin starter ini:
 
-## 1. File env
+```bash
+bash /home/sangga/Documents/project_SEO_Pabrik/scripts/install-into-laravel.sh "$(pwd)"
+```
 
-Tambahkan konfigurasi berikut ke `.env`:
+## 2. Konfigurasi `.env`
+
+Minimal isi:
 
 ```env
-APP_NAME="Mega Portal"
-APP_URL=http://localhost:8000
+APP_NAME="Arena Nalar"
+APP_URL=https://domain-anda.com
 
 ADMIN_PATH=studio-panel
 MICROSAAS_PUBLIC_PATH=microsaas
 MICROSAAS_RELEASES_DISK=local
 
+QUEUE_CONNECTION=database
+SESSION_DRIVER=database
+
 VERTEX_API_KEY=your-vertex-api-key
 VERTEX_PROJECT_ID=your-gcp-project-id
 VERTEX_LOCATION=global
-VERTEX_MODEL=gemini-2.5-flash-lite
+VERTEX_MODEL=gemini-2.5-pro
 VERTEX_PUBLISHER=google
-VERTEX_MAX_OUTPUT_TOKENS=1300
-VERTEX_TEMPERATURE=0.35
-VERTEX_TOP_P=0.85
-SEO_DAILY_MIN_ARTICLES=5
-SEO_DAILY_MAX_ARTICLES=7
-SEO_ARTICLE_MIN_WORDS=450
-SEO_ARTICLE_MAX_WORDS=650
+VERTEX_MAX_OUTPUT_TOKENS=2100
+VERTEX_TEMPERATURE=0.28
+VERTEX_TOP_P=0.9
+VERTEX_ARTICLES_PER_RUN=12
 
-SEO_DEFAULT_AUTHOR="Admin Portal"
-SEO_PLACEHOLDER_AD_CODE="<div data-ad-slot='placeholder-top'></div>"
+SEO_DAILY_MIN_ARTICLES=12
+SEO_DAILY_MAX_ARTICLES=18
+SEO_ARTICLE_MIN_WORDS=700
+SEO_ARTICLE_MAX_WORDS=1200
+
+PORTAL_SITE_NAME="Arena Nalar"
+PORTAL_SITE_TAGLINE="Olahraga, perlengkapan, IT, dan hidroponik dalam satu portal editorial."
+PORTAL_HERO_TITLE="Portal editorial yang putar arah ke olahraga, IT, dan hidroponik."
+PORTAL_HERO_DESCRIPTION="Bangun mesin konten yang rutin terbit, punya gambar artikel, siap menampung link affiliate, dan tetap enak dibaca di production."
+PORTAL_AFFILIATE_DISCLOSURE="Sebagian rekomendasi dapat berisi link affiliate yang memberi komisi tanpa menambah harga untuk pembaca."
 ```
 
-Jika Anda memilih auth berbasis service account, ganti implementasi service HTTP di `VertexSeoFactoryService`.
+Catatan:
 
-File tambahan yang harus ikut disalin:
+- `PORTAL_LOGO_URL` tidak wajib jika Anda akan upload logo dari admin.
+- `VERTEX_API_KEY` tetap hanya dipakai di backend Laravel.
 
-- `config/portal.php`
+## 3. Middleware alias
 
-## 2. Database
+Di Laravel 11, buka `bootstrap/app.php` lalu tambahkan:
 
-Migration yang perlu dijalankan:
+```php
+->withMiddleware(function ($middleware) {
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\EnsureAdmin::class,
+    ]);
+})
+```
+
+## 4. Database dan storage
+
+Jalankan:
 
 ```bash
-php artisan migrate
-php artisan db:seed
+php artisan key:generate
+php artisan session:table
+php artisan queue:table
+php artisan migrate --seed
+php artisan storage:link
 ```
 
-Tambahkan admin pertama:
+Buat admin pertama:
 
 ```bash
 php artisan tinker
@@ -67,235 +96,102 @@ php artisan tinker
 ]);
 ```
 
-## 3. Middleware alias
+`storage:link` penting karena logo upload dan gambar artikel kategori memakai disk `public`.
 
-Di Laravel 11, buka `bootstrap/app.php` dan tambahkan alias middleware:
+## 5. Panel admin
 
-```php
-->withMiddleware(function ($middleware) {
-    $middleware->alias([
-        'admin' => \App\Http\Middleware\EnsureAdmin::class,
-    ]);
-})
+Masuk ke:
+
+- `/studio-panel/login`
+
+Di menu `Konten & Media`, Anda sekarang bisa:
+
+- mengubah nama website, tagline, copy hero, dan disclosure affiliate
+- upload logo website
+- upload banyak gambar artikel per kategori
+- menyimpan placement affiliate
+- generate batch artikel
+
+## 6. Kategori konten aktif
+
+Starter ini diarahkan ke 5 pilar:
+
+- `sports_training`
+- `sports_places`
+- `sports_gear`
+- `it_insights`
+- `hydroponics`
+
+Artikel yang dibuat akan mengambil satu cover image berdasarkan kategori. Jika belum ada gambar yang diupload, sistem jatuh ke cover SVG otomatis.
+
+## 7. Sistem gambar artikel
+
+Tempat uploadnya ada di panel admin `Konten & Media`.
+
+Alurnya:
+
+1. Pilih kategori.
+2. Upload beberapa gambar sekaligus.
+3. Sistem menyimpan gambar ke `storage/app/public/article-images/...`.
+4. Frontend mengambil satu gambar cover stabil untuk tiap artikel dari kategori yang sesuai.
+
+Ini berarti Anda tidak perlu upload gambar satu per satu ke setiap artikel kalau workflow Anda memang berbasis tag atau kategori.
+
+## 8. Sistem affiliate
+
+Saat akun Involve Asia sudah siap:
+
+1. Buka panel `Konten & Media`.
+2. Tambahkan placement affiliate.
+3. Isi `target_url` dengan link affiliate Anda.
+4. `image_url` opsional.
+
+Placement inline akan tampil sebagai kartu rekomendasi di artikel, bukan banner besar yang merusak layout.
+
+## 9. Queue dan scheduler
+
+Jalankan worker:
+
+```bash
+php artisan queue:work --queue=seo
 ```
 
-## 4. User model
-
-Pastikan model `User` punya kolom `is_admin` pada `$fillable` atau gunakan `$guarded = [];`.
-
-## 5. Storage dan folder Micro-SaaS
-
-Folder build Micro-SaaS disimpan ke:
-
-- `storage/app/microsaas/{slug}/releases/{timestamp}`
-- symlink/copy aktif di `public/microsaas/{slug}`
-
-Pastikan web server nanti mengizinkan static file dari folder `public/microsaas`.
-
-Setiap frontend yang diupload juga otomatis mendapat:
-
-- `portal-runtime.json`
-- `portal-runtime.js`
-
-Isi file itu memuat `backend_base_url`, `slug`, dan metadata app, jadi frontend baru Anda cukup membaca runtime config itu tanpa rebuild ulang.
-
-Contoh pemakaian frontend ada di:
-
-- `resources/views/microsaas/runtime-example.blade.php`
-- `../microsaas-sample/`
-
-## 6. Scheduler
-
-Tambahkan ke cron server nanti:
+Tambahkan cron:
 
 ```bash
 * * * * * cd /path/to/your/laravel-app && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Di Laravel 11, scheduler didefinisikan di `routes/console.php`.
+Di VPS production, queue worker sebaiknya dijalankan permanen lewat Supervisor atau systemd.
 
-Untuk mode queue yang lebih aman, set juga `.env`:
+## 10. Produksi artikel volume tinggi
 
-```env
-QUEUE_CONNECTION=database
-```
-
-Lalu jalankan:
+Command manual:
 
 ```bash
-php artisan queue:table
-php artisan migrate
 php artisan seo:dispatch-daily
-php artisan queue:work --queue=seo
+php artisan seo:generate-daily --limit=12
 ```
 
-Di VPS nanti, queue worker sebaiknya dijalankan terus lewat Supervisor atau systemd.
+Yang pertama mendorong job ke queue. Yang kedua menjalankan generate langsung tanpa queue.
 
-## 7. Routing wildcard subdomain nanti di VPS
+## 11. Catatan deploy
 
-Saat pindah ke VPS, Anda bisa map subdomain ke folder:
-
-- `public/microsaas/{slug}`
-
-Tetapi starter ini tetap jalan dulu dengan pola URL:
-
-- `https://domain.com/microsaas/{slug}/`
-
-## 8. Catatan integrasi
-
-- login admin: `/{$ADMIN_PATH}/login`
-- dashboard: `/{$ADMIN_PATH}`
-- upload Micro-SaaS: `/{$ADMIN_PATH}/microsaas`
-- SEO factory: `/{$ADMIN_PATH}/seo`
-- runtime config Micro-SaaS: `/microsaas/{slug}/config.json`
-
-## 9. Vertex API
-
-Starter ini memakai endpoint REST `generateContent` milik Vertex AI dan memaksa respons JSON agar parsing lebih stabil. Dokumentasi resmi:
-
-- https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest
-
-## 10. Uji upload pertama
-
-Panduan praktis ada di:
-
-- `docs/FIRST_MICROSAAS_TEST.md`
-
-## 11. Fokus tema artikel
-
-Starter ini sekarang dibatasi ke 3 tema:
-
-- `urban_farming`
-- `informatics_learning`
-- `business_growth`
-
-Generator harian akan mengambil topik aktif dari tema itu saja. Keyword utama dipilih otomatis dari pool keyword sesuai tema, lalu diputar lagi saat proses generate berikutnya.
-
-## 12. Deploy manual yang benar
-
-Untuk update live di VPS tanpa workflow otomatis, jalankan:
+Untuk deploy manual:
 
 ```bash
-cd ~/project_SEO_Pabrik
-git fetch origin
-git reset --hard origin/main
-bash ~/project_SEO_Pabrik/scripts/deploy-vps.sh ~/project_SEO_Pabrik /var/www/serbainfo.com php8.3-fpm
+bash /home/sangga/Documents/project_SEO_Pabrik/scripts/deploy-vps.sh /home/sangga/Documents/project_SEO_Pabrik /var/www/domain-anda php8.3-fpm
 ```
 
-Catatan:
+Sebelum deploy, pastikan:
 
-- `install-into-laravel.sh` sekarang punya 2 mode.
-- Mode default tetap aman untuk setup awal karena tidak menimpa file target lama.
-- Untuk deploy update live, gunakan `--overwrite` atau langsung pakai `deploy-vps.sh`.
+- `.env` production sudah benar
+- `storage` writable oleh user web server
+- `php artisan config:cache` dan `php artisan route:cache` dijalankan di app final jika environment sudah stabil
+- worker queue hidup setelah deploy
 
-## 13. Deploy otomatis dari GitHub Actions
+## 12. Batasan saat ini
 
-Repo ini sudah disiapkan dengan workflow:
-
-- `.github/workflows/deploy.yml`
-
-Workflow itu akan jalan setiap ada push ke branch `main`, lalu SSH ke VPS dan menjalankan deploy otomatis.
-
-### Secret GitHub yang harus Anda isi
-
-Masuk ke:
-
-- GitHub repository
-- `Settings`
-- `Secrets and variables`
-- `Actions`
-
-Tambahkan secret berikut:
-
-- `VPS_HOST`
-  Isi contoh: `serbainfo.com` atau IP VPS Anda
-- `VPS_USER`
-  Isi contoh: `deploy`
-- `VPS_SSH_KEY`
-  Isi private key SSH yang dipakai GitHub Actions untuk login ke VPS
-- `VPS_REPO_DIR`
-  Isi contoh: `/home/deploy/project_SEO_Pabrik`
-- `VPS_APP_DIR`
-  Isi contoh: `/var/www/serbainfo.com`
-- `VPS_PHP_FPM_SERVICE`
-  Isi contoh: `php8.3-fpm`
-
-### Cara membuat SSH key khusus deploy
-
-Di lokal Anda:
-
-```bash
-ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_actions_deploy
-```
-
-Lalu:
-
-```bash
-cat ~/.ssh/github_actions_deploy.pub
-```
-
-Salin hasil public key itu ke VPS pada file:
-
-```bash
-~/.ssh/authorized_keys
-```
-
-Contoh:
-
-```bash
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-echo "PASTE_PUBLIC_KEY_DI_SINI" >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-```
-
-Setelah itu ambil private key:
-
-```bash
-cat ~/.ssh/github_actions_deploy
-```
-
-Salin seluruh isinya ke GitHub secret `VPS_SSH_KEY`.
-
-### Syarat sudo restart service
-
-Karena workflow akan menjalankan:
-
-```bash
-sudo systemctl restart php8.3-fpm
-```
-
-user deploy Anda harus bisa restart service itu tanpa prompt password. Tambahkan rule sudoers di VPS:
-
-```bash
-sudo visudo
-```
-
-Isi:
-
-```bash
-deploy ALL=NOPASSWD: /bin/systemctl restart php8.3-fpm
-```
-
-Kalau nama service PHP-FPM Anda berbeda, sesuaikan.
-
-### Setelah setup
-
-Berikutnya alurnya cukup:
-
-```bash
-git add .
-git commit -m "update portal"
-git push origin main
-```
-
-GitHub Actions akan:
-
-- SSH ke VPS
-- `git fetch` dan `git reset --hard origin/main`
-- salin `laravel-ready` ke app Laravel dengan mode overwrite
-- jalankan `php artisan migrate --force`
-- jalankan `php artisan optimize:clear`
-- restart PHP-FPM
-
-Kalau semua secret benar, perubahan akan langsung live setelah push selesai.
+- Workspace starter ini tidak membawa skeleton Laravel penuh.
+- Verifikasi sintaks PHP di repo ini tidak bisa dijalankan di workspace sekarang karena binary `php` belum tersedia.
+- Referensi artikel sekarang sudah punya struktur tersendiri, tetapi validasi kebenaran sumber tetap perlu dipantau di environment production dan proses editorial Anda.

@@ -15,9 +15,9 @@
         <a class="tag" href="{{ route('admin.microsaas.index') }}">Buka Modul Micro-SaaS</a>
     </div>
     <div class="panel">
-        <h3>Jalankan SEO Factory</h3>
-        <p class="muted">Generate batch artikel dari topik aktif dengan satu klik atau lewat scheduler.</p>
-        <a class="tag" href="{{ route('admin.seo.index') }}">Buka SEO Factory</a>
+        <h3>Kelola Konten & Media</h3>
+        <p class="muted">Atur branding, upload gambar kategori, simpan placement affiliate, dan generate batch artikel.</p>
+        <a class="tag" href="{{ route('admin.seo.index') }}">Buka Konten & Media</a>
     </div>
 </section>
 
