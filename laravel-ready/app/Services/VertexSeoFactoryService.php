@@ -186,19 +186,21 @@ class VertexSeoFactoryService
 Tulis artikel SEO ringkas dalam bahasa {$topic->language}.
 - Keyword utama: {$topic->keyword}
 - Tema konten: {$themeLabel}
-- Search intent: {$topic->search_intent}
 - Negara target: {$topic->country_code}
 - {$categoryGuide}
 
 Aturan konten:
 - Panjang {$minWords}-{$maxWords} kata
 - Langsung menjawab intent pencarian dengan bahasa Indonesia yang natural
+- Pilih angle artikel secara acak namun tetap relevan dengan keyword dan tema
 - Jangan ulangi judul di dalam `content_html`
 - Mulai `content_html` langsung dari paragraf pembuka, lalu gunakan H2/H3 seperlunya
 - Gunakan HTML valid saja: <h2>, <h3>, <p>, <ul>, <li>, <strong>
 - Jangan menyebut AI, Gemini, model, prompt, atau proses generasi
 - Jangan menulis kalimat seperti "berdasarkan Gemini", "menurut AI", atau sumber fiktif lain
-- Sertakan 2 sampai 4 referensi nyata dari sumber tepercaya jika memungkinkan: jurnal, situs kampus, asosiasi resmi, lembaga riset, pemerintah, dokumentasi resmi, atau vendor resmi
+- Sertakan 2 sampai 4 referensi nyata dari sumber tepercaya: jurnal, situs kampus, asosiasi resmi, lembaga riset, pemerintah, dokumentasi resmi, atau vendor resmi
+- Setiap referensi wajib punya URL HTTPS langsung yang bisa diklik
+- Jangan keluarkan referensi tanpa URL aktif
 - Jika topik membahas tempat olahraga terdekat, jangan mengarang alamat spesifik; fokus pada cara memilih dan menilai fasilitas
 - Jangan gunakan markdown
 - Jangan gunakan code fence
@@ -306,17 +308,17 @@ PROMPT;
 
                 $title = trim((string) ($reference['title'] ?? ''));
                 $publisher = trim((string) ($reference['publisher'] ?? ''));
-                $url = trim((string) ($reference['url'] ?? ''));
+                $url = $this->extractValidUrl((string) ($reference['url'] ?? ''));
                 $year = trim((string) ($reference['year'] ?? ''));
 
-                if ($title === '') {
+                if ($title === '' || ! $url) {
                     return null;
                 }
 
                 return [
                     'title' => $title,
                     'publisher' => $publisher ?: null,
-                    'url' => filter_var($url, FILTER_VALIDATE_URL) ? $url : null,
+                    'url' => $url,
                     'year' => $year ?: null,
                 ];
             })
@@ -324,5 +326,22 @@ PROMPT;
             ->take(4)
             ->values()
             ->all();
+    }
+
+    private function extractValidUrl(string $value): ?string
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (preg_match('/https:\/\/[^\s"<>()]+/i', $value, $matches) !== 1) {
+            return null;
+        }
+
+        $url = rtrim($matches[0], '.,);');
+
+        return filter_var($url, FILTER_VALIDATE_URL) ? $url : null;
     }
 }

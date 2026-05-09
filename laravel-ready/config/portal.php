@@ -71,7 +71,7 @@ return [
             'sports_training' => [
                 'label' => 'Teknik dan Latihan Olahraga',
                 'description' => 'Bahas teknik dasar, pola latihan, recovery, dan peningkatan performa untuk olahraga yang sedang ramai dicari.',
-                'search_intents' => ['informational', 'commercial'],
+                'search_intents' => ['informational'],
                 'keyword_pool' => [
                     'teknik footwork badminton untuk pemula',
                     'cara latihan passing futsal yang benar',
@@ -91,7 +91,7 @@ return [
             'sports_places' => [
                 'label' => 'Tempat dan Olahraga Terdekat',
                 'description' => 'Panduan memilih tempat olahraga, venue terdekat, kelas latihan, dan fasilitas yang cocok untuk kebutuhan pembaca.',
-                'search_intents' => ['informational', 'commercial', 'navigational'],
+                'search_intents' => ['informational'],
                 'keyword_pool' => [
                     'cara mencari lapangan badminton terdekat yang bagus',
                     'tips memilih gym terdekat untuk pemula',
@@ -111,7 +111,7 @@ return [
             'sports_gear' => [
                 'label' => 'Perlengkapan dan Rekomendasi Olahraga',
                 'description' => 'Rekomendasi raket, sepatu, bola, pakaian, dan aksesori olahraga dengan angle pemilihan yang membantu pembaca.',
-                'search_intents' => ['informational', 'commercial', 'transactional'],
+                'search_intents' => ['informational'],
                 'keyword_pool' => [
                     'cara memilih raket badminton untuk intermediate',
                     'sepatu lari harian yang nyaman untuk pemula',
@@ -131,7 +131,7 @@ return [
             'it_insights' => [
                 'label' => 'IT, Tutorial, dan Perkembangan Teknologi',
                 'description' => 'Campuran materi IT yang bisa dipelajari ulang, insight tools, perkembangan teknologi, dan penjelasan yang mudah dicopas sebagai catatan belajar.',
-                'search_intents' => ['informational', 'commercial'],
+                'search_intents' => ['informational'],
                 'keyword_pool' => [
                     'perbedaan cloud server dan shared hosting',
                     'cara belajar git untuk pemula',
@@ -151,7 +151,7 @@ return [
             'hydroponics' => [
                 'label' => 'Hidroponik dan Urban Farming',
                 'description' => 'Topik hidroponik tetap dipertahankan untuk pembaca yang mencari panduan tanam praktis, nutrisi, dan perawatan.',
-                'search_intents' => ['informational', 'commercial'],
+                'search_intents' => ['informational'],
                 'keyword_pool' => [
                     'cara menanam selada hidroponik untuk pemula',
                     'nutrisi hidroponik sayuran daun yang bagus',

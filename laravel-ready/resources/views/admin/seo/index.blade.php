@@ -206,7 +206,11 @@
     <section class="panel">
         <span class="pill">Affiliate</span>
         <h3 style="margin:10px 0 6px;">Placement Link Involve Asia</h3>
-        <p class="muted" style="margin:0;">Kalau akun affiliate Anda belum siap, bagian ini bisa diisi belakangan. Tempel `target_url` saat link sudah jadi. Gambar banner opsional.</p>
+        <p class="muted" style="margin:0;">Kalau akun Involve Asia Anda sudah aktif, ambil link affiliate dari dashboard Involve Asia lalu tempel ke `target_url`. Gambar banner opsional. Kalau tidak ada banner, placement tetap bisa tampil sebagai kartu rekomendasi teks.</p>
+        <div class="card-note" style="margin-top:18px;">
+            <strong>Alur paling mudah</strong>
+            <div class="muted" style="margin-top:6px;">1. Login ke Involve Asia. 2. Pilih merchant atau produk. 3. Generate tracking link. 4. Paste link itu ke field `target_url` di bawah. 5. Isi nama placement dan CTA sesuai isi promosi.</div>
+        </div>
 
         <form method="POST" action="{{ route('admin.seo.banners.store') }}" class="stack" style="margin-top:18px;">
             @csrf
@@ -250,6 +254,7 @@
     <section class="panel">
         <span class="pill">Topik SEO</span>
         <h3 style="margin:10px 0 16px;">Tema Aktif</h3>
+        <p class="muted" style="margin:0 0 16px;">Alurnya sederhana: Anda cukup aktifkan tema. Sistem akan memilih dan memutar keyword sendiri setiap kali generator jalan. Jadi keyword yang terlihat di sini hanya keyword putaran saat ini, bukan keyword tetap.</p>
 
         <form method="POST" action="{{ route('admin.seo.topics.store') }}" class="stack" style="margin-bottom:18px;">
             @csrf
@@ -271,8 +276,7 @@
                 <thead>
                     <tr>
                         <th>Tema</th>
-                        <th>Keyword Aktif</th>
-                        <th>Intent</th>
+                        <th>Keyword Putaran Saat Ini</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -291,6 +295,7 @@
                                 <div class="card-note">
                                     <strong>{{ $themeLabels[$topic->category] ?? $topic->category }}</strong>
                                     <div class="muted" style="margin-top:6px;">{{ $themes[$topic->category]['description'] ?? 'Tema tersimpan.' }}</div>
+                                    <div class="muted" style="margin-top:8px;">Keyword akan berganti otomatis saat batch generator berikutnya berjalan.</div>
                                 </div>
                                 <label class="inline" style="justify-content:flex-start;">
                                     <input style="width:auto;" type="checkbox" name="is_active" value="1" @checked($topic->is_active)>
@@ -300,7 +305,6 @@
                             </form>
                         </td>
                         <td>{{ $topic->keyword ?: '-' }}</td>
-                        <td>{{ ucfirst($topic->search_intent) }}</td>
                         <td>
                             <form method="POST" action="{{ route('admin.seo.topics.destroy', $topic) }}">
                                 @csrf
@@ -310,7 +314,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="muted">Belum ada tema aktif.</td></tr>
+                    <tr><td colspan="3" class="muted">Belum ada tema aktif.</td></tr>
                 @endforelse
                 </tbody>
             </table>
