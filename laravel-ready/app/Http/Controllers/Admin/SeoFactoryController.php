@@ -29,11 +29,42 @@ class SeoFactoryController extends Controller
     ) {
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $articleSearch = trim((string) $request->string('article_search'));
+        $articlesQuery = Article::query()->latest();
+
+        if ($articleSearch !== '') {
+            $articlesQuery->where(function ($query) use ($articleSearch) {
+                $query
+                    ->where('title', 'like', "%{$articleSearch}%")
+                    ->orWhere('slug', 'like', "%{$articleSearch}%")
+                    ->orWhere('meta_description', 'like', "%{$articleSearch}%")
+                    ->orWhere('excerpt', 'like', "%{$articleSearch}%");
+            });
+        }
+
+        $articles = $articlesQuery
+            ->select(['id', 'topic_id', 'title', 'slug', 'excerpt', 'status', 'published_at', 'updated_at'])
+            ->with('topic:id,category')
+            ->paginate(20)
+            ->withQueryString();
+
+        $selectedArticleId = $request->integer('article');
+        $selectedArticle = $selectedArticleId > 0
+            ? Article::with('topic')->find($selectedArticleId)
+            : null;
+
+        if (! $selectedArticle && $articles->count() > 0) {
+            $selectedArticle = Article::with('topic')->find($articles->first()->id);
+        }
+
         return view('admin.seo.index', [
             'topics' => ArticleTopic::latest()->get(),
-            'articles' => Article::latest()->limit(20)->get(),
+            'articles' => $articles,
+            'articlesPublishedCount' => Article::query()->where('status', 'published')->count(),
+            'articleSearch' => $articleSearch,
+            'selectedArticle' => $selectedArticle,
             'banners' => AffiliateBanner::latest()->get(),
             'themes' => $this->seoFactory->themeOptions(),
             'settings' => $this->portalSettings->all(),

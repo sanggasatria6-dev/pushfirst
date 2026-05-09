@@ -5,9 +5,115 @@
     $branding = $settings['branding'] ?? [];
     $homepage = $settings['homepage'] ?? [];
     $affiliate = $settings['affiliate'] ?? [];
+    $selectedArticleReferences = collect($selectedArticle?->source_references ?? [])->map(
+        fn ($reference) => trim(implode(' | ', array_filter([
+            $reference['title'] ?? '',
+            $reference['publisher'] ?? '',
+            $reference['url'] ?? '',
+            $reference['year'] ?? '',
+        ], fn ($value) => filled($value))))
+    )->filter()->implode("\n");
 @endphp
 
 @section('content')
+<style>
+    .article-admin {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+    }
+    .article-search-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 18px 0 16px;
+    }
+    .article-search-form > * {
+        flex: 1 1 0;
+    }
+    .article-list {
+        display: grid;
+        gap: 10px;
+        max-height: 980px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    .article-list-item {
+        display: block;
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(101, 73, 48, 0.12);
+        background: rgba(255, 251, 246, 0.82);
+    }
+    .article-list-item.active {
+        border-color: rgba(54, 73, 44, 0.28);
+        background: rgba(229, 235, 215, 0.72);
+        box-shadow: inset 0 0 0 1px rgba(54, 73, 44, 0.08);
+    }
+    .article-list-meta {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        font-size: .9rem;
+        color: var(--muted);
+    }
+    .article-editor-header {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+    .article-editor-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .article-editor-actions form,
+    .article-editor-actions a {
+        width: auto;
+    }
+    .article-editor-actions button,
+    .article-editor-actions a {
+        width: auto;
+        padding: 11px 16px;
+        border-radius: 14px;
+    }
+    .pager {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 14px;
+        color: var(--muted);
+    }
+    .pager a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(101, 73, 48, 0.16);
+        background: rgba(255, 250, 243, 0.82);
+        color: var(--text);
+    }
+    .editor-empty {
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px dashed rgba(101, 73, 48, 0.24);
+        background: rgba(255, 251, 246, 0.6);
+    }
+    @media (max-width: 1240px) {
+        .article-admin {
+            grid-template-columns: 1fr;
+        }
+        .article-list {
+            max-height: 420px;
+        }
+    }
+</style>
 <section class="grid grid-3" style="margin-bottom:18px;">
     <div class="stat">
         <span class="pill">Brand</span>
@@ -16,7 +122,7 @@
     </div>
     <div class="stat">
         <span class="pill">Artikel</span>
-        <strong>{{ $articles->where('status', 'published')->count() }}</strong>
+        <strong>{{ $articlesPublishedCount }}</strong>
         <div class="muted">Artikel publish yang siap tampil di home.</div>
     </div>
     <div class="stat">
@@ -298,54 +404,94 @@
 
 <section class="panel" style="margin-top:18px;">
     <span class="pill">Artikel</span>
-    <h3 style="margin:10px 0 16px;">Editorial Terbaru</h3>
-    <div class="table-wrap">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Artikel</th>
-                    <th>Slug</th>
-                    <th>Status</th>
-                    <th>Preview</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-            @forelse ($articles as $article)
-                <tr>
-                    <td style="min-width:420px;">
-                        <form method="POST" action="{{ route('admin.seo.articles.update', $article) }}" class="stack">
-                            @csrf
-                            @method('PUT')
-                            <input type="text" name="title" value="{{ $article->title }}" required>
-                            <input type="text" name="meta_description" value="{{ $article->meta_description }}" required>
-                            <textarea name="excerpt" rows="2">{{ $article->excerpt }}</textarea>
-                            <textarea name="content_html" rows="10" required>{{ $article->content_html }}</textarea>
-                            <textarea name="source_references_text" rows="4" placeholder="Judul | Penerbit | URL | Tahun">@foreach ($article->source_references ?? [] as $reference){{ ($reference['title'] ?? '') }} | {{ ($reference['publisher'] ?? '') }} | {{ ($reference['url'] ?? '') }} | {{ ($reference['year'] ?? '') }}
-@endforeach</textarea>
-                            <select name="status" required>
-                                <option value="draft" @selected($article->status === 'draft')>draft</option>
-                                <option value="published" @selected($article->status === 'published')>published</option>
-                            </select>
-                            <button type="submit">Update Artikel</button>
-                        </form>
-                    </td>
-                    <td>{{ $article->slug }}</td>
-                    <td>{{ $article->status }}</td>
-                    <td><a href="{{ route('articles.show', $article) }}" target="_blank">Buka</a></td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.seo.articles.destroy', $article) }}">
+    <h3 style="margin:10px 0 6px;">Daftar Artikel & Editor</h3>
+    <p class="muted" style="margin:0;">Pilih satu artikel dari daftar kiri, lalu edit detailnya di panel kanan. Search dipakai untuk menangani data yang besar.</p>
+
+    <form method="GET" action="{{ route('admin.seo.index') }}" class="article-search-form">
+        <input type="text" name="article_search" value="{{ $articleSearch }}" placeholder="Cari judul, slug, excerpt, atau meta description">
+        <button type="submit" style="width:auto;">Cari Artikel</button>
+    </form>
+
+    <div class="article-admin">
+        <div>
+            <div class="article-list">
+                @forelse ($articles as $article)
+                    <a
+                        href="{{ route('admin.seo.index', array_filter(['article_search' => $articleSearch, 'page' => $articles->currentPage(), 'article' => $article->id])) }}"
+                        class="article-list-item @if ($selectedArticle && $selectedArticle->id === $article->id) active @endif"
+                    >
+                        <strong>{{ $article->title }}</strong>
+                        <div class="muted" style="margin-top:6px;">{{ \Illuminate\Support\Str::limit($article->slug, 48) }}</div>
+                        <div class="article-list-meta">
+                            <span>{{ $themeLabels[$article->topic?->category ?? ''] ?? 'Editorial' }}</span>
+                            <span>{{ $article->status }}</span>
+                            <span>{{ optional($article->published_at)->format('d M Y') ?: '-' }}</span>
+                        </div>
+                    </a>
+                @empty
+                    <div class="editor-empty">
+                        <strong>Belum ada artikel.</strong>
+                        <div class="muted" style="margin-top:6px;">Coba generate artikel atau ubah kata kunci pencarian.</div>
+                    </div>
+                @endforelse
+            </div>
+
+            @if ($articles->hasPages())
+                <div class="pager">
+                    <span>Halaman {{ $articles->currentPage() }} dari {{ $articles->lastPage() }}</span>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        @if ($articles->onFirstPage())
+                            <span></span>
+                        @else
+                            <a href="{{ $articles->previousPageUrl() }}">Sebelumnya</a>
+                        @endif
+                        @if ($articles->hasMorePages())
+                            <a href="{{ $articles->nextPageUrl() }}">Berikutnya</a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <div>
+            @if ($selectedArticle)
+                <div class="article-editor-header">
+                    <div>
+                        <span class="pill">Editor</span>
+                        <h3 style="margin:10px 0 6px;">{{ $selectedArticle->title }}</h3>
+                        <div class="muted">{{ $selectedArticle->slug }}</div>
+                    </div>
+                    <div class="article-editor-actions">
+                        <a class="alt" href="{{ route('articles.show', $selectedArticle) }}" target="_blank" style="display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(101,73,48,.2);background:rgba(255,255,255,.86);">Buka</a>
+                        <form method="POST" action="{{ route('admin.seo.articles.destroy', $selectedArticle) }}">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="danger">Hapus</button>
                         </form>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="5" class="muted">Belum ada artikel.</td></tr>
-            @endforelse
-            </tbody>
-        </table>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.seo.articles.update', $selectedArticle) }}" class="stack">
+                    @csrf
+                    @method('PUT')
+                    <input type="text" name="title" value="{{ $selectedArticle->title }}" required>
+                    <input type="text" name="meta_description" value="{{ $selectedArticle->meta_description }}" required>
+                    <textarea name="excerpt" rows="3">{{ $selectedArticle->excerpt }}</textarea>
+                    <textarea name="content_html" rows="18" required>{{ $selectedArticle->content_html }}</textarea>
+                    <textarea name="source_references_text" rows="5" placeholder="Judul | Penerbit | URL | Tahun">{{ $selectedArticleReferences }}</textarea>
+                    <select name="status" required>
+                        <option value="draft" @selected($selectedArticle->status === 'draft')>draft</option>
+                        <option value="published" @selected($selectedArticle->status === 'published')>published</option>
+                    </select>
+                    <button type="submit">Update Artikel</button>
+                </form>
+            @else
+                <div class="editor-empty">
+                    <strong>Tidak ada artikel yang dipilih.</strong>
+                    <div class="muted" style="margin-top:6px;">Pilih artikel dari daftar kiri untuk membuka editor.</div>
+                </div>
+            @endif
+        </div>
     </div>
 </section>
 @endsection
