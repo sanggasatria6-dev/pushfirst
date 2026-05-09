@@ -359,7 +359,9 @@
                 <div class="article-grid">
                     @forelse ($latestArticles as $article)
                         <article class="article-card">
-                            <img src="{{ route('articles.cover', $article) }}" alt="{{ $article->title }}" loading="lazy">
+                            @if (!empty($articleCoverUrls[$article->id]))
+                                <img src="{{ $articleCoverUrls[$article->id] }}" alt="{{ $article->title }}" loading="lazy">
+                            @endif
                             <div class="article-copy">
                                 <span class="tag">{{ $themeLabels[$article->topic?->category ?? ''] ?? 'Editorial' }}</span>
                                 <h3>{{ $article->title }}</h3>

@@ -5,18 +5,31 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\Microsaas;
 use App\Services\VertexSeoFactoryService;
+use App\Support\ArticleMediaLibrary;
 use App\Support\PortalSettings;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(VertexSeoFactoryService $seoFactory, PortalSettings $settings): View
+    public function index(
+        VertexSeoFactoryService $seoFactory,
+        PortalSettings $settings,
+        ArticleMediaLibrary $articleMediaLibrary,
+    ): View
     {
         $articles = Article::query()
             ->where('status', 'published')
             ->latest('published_at')
             ->limit(8)
             ->get();
+
+        $articleCoverUrls = $articles
+            ->mapWithKeys(function (Article $article) use ($articleMediaLibrary): array {
+                $image = $articleMediaLibrary->pickForArticle($article);
+
+                return [$article->id => $image['url'] ?? null];
+            })
+            ->all();
 
         return view('home', [
             'featuredMicrosaas' => Microsaas::query()
@@ -35,6 +48,7 @@ class HomeController extends Controller
             )->all(),
             'portalBranding' => $settings->branding(),
             'homepageSettings' => $settings->homepage(),
+            'articleCoverUrls' => $articleCoverUrls,
         ]);
     }
 }

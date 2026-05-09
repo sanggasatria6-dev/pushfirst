@@ -190,7 +190,9 @@
                 <span>{{ strtoupper($article->topic?->country_code ?? 'ID') }}</span>
             </div>
             <p class="deck">{{ $article->excerpt }}</p>
-            <img class="cover" src="{{ route('articles.cover', $article) }}" alt="{{ $article->title }}" loading="eager">
+            @if ($coverImageUrl)
+                <img class="cover" src="{{ $coverImageUrl }}" alt="{{ $article->title }}" loading="eager">
+            @endif
 
             <div class="content">{!! $contentHtml !!}</div>
 
