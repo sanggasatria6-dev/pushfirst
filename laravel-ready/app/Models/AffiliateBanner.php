@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 
 class AffiliateBanner extends Model
 {
@@ -28,17 +29,19 @@ class AffiliateBanner extends Model
             ->where('is_active', true);
     }
 
-    public static function pickForPlacement(string $placement, int $limit = 1): Collection
+    public static function pickForPlacement(string $placement, int $limit = 1): EloquentCollection
     {
         $banners = static::query()
             ->activePlacement($placement)
             ->get();
 
         if ($banners->isEmpty()) {
-            return new Collection();
+            return new EloquentCollection();
         }
 
-        return static::weightedShuffle($banners)->take($limit)->values();
+        return new EloquentCollection(
+            static::weightedShuffle($banners)->take($limit)->values()->all()
+        );
     }
 
     public static function pickOneForPlacement(string $placement): ?self
@@ -46,7 +49,7 @@ class AffiliateBanner extends Model
         return static::pickForPlacement($placement)->first();
     }
 
-    private static function weightedShuffle(Collection $banners): Collection
+    private static function weightedShuffle(EloquentCollection $banners): Collection
     {
         return $banners
             ->map(function (self $banner): array {
