@@ -43,11 +43,11 @@
             justify-content: flex-start;
         }
         .logo-box {
-            width: 46px;
-            height: 46px;
+            width: 58px;
+            height: 58px;
             display: grid;
             place-items: center;
-            border-radius: 14px;
+            border-radius: 16px;
             border: 1px solid var(--line);
             background: var(--surface);
             overflow: hidden;
@@ -62,18 +62,17 @@
             color: var(--accent-strong);
             font-weight: 700;
         }
-        .back-link {
+        .brand-link {
             display: inline-flex;
-            padding: 10px 14px;
-            border-radius: 999px;
-            border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.8);
-            color: var(--muted);
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: inherit;
         }
         .shell {
             margin-top: 22px;
             padding: 30px;
-            border-radius: 30px;
+            border-radius: 22px;
             border: 1px solid var(--line);
             background: var(--surface);
             box-shadow: var(--shadow);
@@ -133,29 +132,24 @@
         .content ul { padding-left: 22px; }
         .reference-box {
             margin-top: 30px;
-            padding: 22px;
-            border-radius: 24px;
-            border: 1px solid var(--line);
-            background: rgba(248, 250, 247, 0.9);
+            padding-top: 10px;
+            border-top: 1px solid rgba(83, 78, 66, 0.14);
         }
         .reference-box h2 {
-            margin: 0 0 12px;
+            margin: 0 0 14px;
             font-size: 1.45rem;
         }
         .reference-list {
             display: grid;
-            gap: 12px;
+            gap: 18px;
         }
         .reference-item {
-            padding: 14px 16px;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.85);
-            border: 1px solid rgba(83, 78, 66, 0.1);
-            overflow: hidden;
+            padding: 0;
+            overflow: visible;
         }
         .reference-item strong {
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .reference-link {
             display: inline-block;
@@ -166,20 +160,93 @@
             overflow-wrap: anywhere;
             word-break: break-word;
         }
+        .affiliate-banner {
+            margin: 26px 0;
+        }
+        .affiliate-banner-link {
+            display: block;
+            text-decoration: none;
+        }
+        .affiliate-banner-image {
+            width: 100%;
+            display: block;
+            border-radius: 16px;
+            border: 1px solid rgba(83, 78, 66, 0.14);
+            box-shadow: 0 16px 34px rgba(18, 28, 24, 0.08);
+            object-fit: cover;
+        }
+        .affiliate-banner-card {
+            padding: 18px;
+            border: 1px solid rgba(83, 78, 66, 0.14);
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(247,250,247,.96), rgba(244,240,232,.9));
+            box-shadow: 0 18px 42px rgba(18,28,24,.08);
+            overflow: hidden;
+        }
+        .affiliate-banner-card-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .affiliate-banner-eyebrow {
+            font-size: 12px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #8a572d;
+            font-weight: 700;
+        }
+        .affiliate-banner-title {
+            display: block;
+            margin-top: 4px;
+        }
+        .affiliate-banner-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 100%;
+            padding: 11px 16px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #173f36, #1f5c4d);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            box-shadow: 0 12px 26px rgba(23,63,54,.22);
+            text-align: center;
+        }
         .muted { color: var(--muted); }
         @media (max-width: 720px) {
             .page { width: min(100vw - 20px, 920px); padding: 20px 0 44px; }
-            .shell { padding: 20px; border-radius: 24px; }
-            .reference-box { padding: 18px; }
-            .reference-item { padding: 14px; }
+            .topbar {
+                align-items: flex-start;
+            }
+            .shell { padding: 18px; border-radius: 18px; }
+            .logo-box {
+                width: 52px;
+                height: 52px;
+            }
             .content p, .content li { font-size: 1rem; line-height: 1.78; }
+            .affiliate-banner {
+                margin: 22px -6px;
+            }
+            .affiliate-banner-image {
+                border-radius: 12px;
+            }
+            .affiliate-banner-card {
+                padding: 16px;
+                border-radius: 14px;
+            }
+            .affiliate-banner-button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="page">
         <div class="topbar">
-            <div class="brand">
+            <a href="{{ route('home') }}" class="brand-link">
                 <div class="logo-box">
                     @if (!empty($portalBranding['logo_url']))
                         <img src="{{ $portalBranding['logo_url'] }}" alt="{{ $portalBranding['logo_alt'] ?? $portalBranding['site_name'] }}">
@@ -188,12 +255,9 @@
                     @endif
                 </div>
                 <div>
-                    <strong>{{ $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar') }}</strong>
-                    <div class="muted">{{ $portalBranding['tagline'] ?? 'Portal editorial olahraga, IT, dan hidroponik.' }}</div>
+                    <strong>Serbainfo</strong>
                 </div>
-            </div>
-
-            <a href="{{ route('home') }}" class="back-link">Kembali ke Home</a>
+            </a>
         </div>
 
         <article class="shell">
