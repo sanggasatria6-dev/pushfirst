@@ -317,7 +317,6 @@
 
                 <div class="hero-actions">
                     <a href="#artikel" class="btn btn-primary">Baca Artikel Terbaru</a>
-                    <a href="{{ route('admin.seo.index') }}" class="btn btn-secondary">Kelola Konten</a>
                 </div>
 
                 <div class="stat-row">

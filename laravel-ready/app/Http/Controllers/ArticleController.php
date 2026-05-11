@@ -23,7 +23,9 @@ class ArticleController extends Controller
 
     public function show(Article $article): View
     {
+        $headerBanner = AffiliateBanner::pickOneForPlacement('article_header');
         $inlineBanners = AffiliateBanner::pickForPlacement('article_inline', 1);
+        $footerBanner = AffiliateBanner::pickOneForPlacement('article_footer');
         $contentHtml = $this->injectInlineBlocks($article->content_html, $inlineBanners->all());
         $theme = $this->seoFactory->themeOptions()[$article->topic?->category ?? ''] ?? [];
         $coverImage = $this->articleMediaLibrary->pickForArticle($article);
@@ -34,6 +36,8 @@ class ArticleController extends Controller
             'coverImageUrl' => $coverImage['url'] ?? null,
             'portalBranding' => $this->portalSettings->branding(),
             'affiliateSettings' => $this->portalSettings->affiliate(),
+            'headerBanner' => $headerBanner,
+            'footerBanner' => $footerBanner,
             'themeLabel' => $theme['label'] ?? 'Artikel',
             'sourceReferences' => $article->source_references ?? [],
         ]);

@@ -151,14 +151,28 @@
             border-radius: 18px;
             background: rgba(255, 255, 255, 0.85);
             border: 1px solid rgba(83, 78, 66, 0.1);
+            overflow: hidden;
         }
         .reference-item strong {
             display: block;
             margin-bottom: 4px;
         }
+        .reference-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: var(--accent);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
         .muted { color: var(--muted); }
         @media (max-width: 720px) {
-            .shell { padding: 22px; border-radius: 24px; }
+            .page { width: min(100vw - 20px, 920px); padding: 20px 0 44px; }
+            .shell { padding: 20px; border-radius: 24px; }
+            .reference-box { padding: 18px; }
+            .reference-item { padding: 14px; }
+            .content p, .content li { font-size: 1rem; line-height: 1.78; }
         }
     </style>
 </head>
@@ -190,6 +204,9 @@
                 <span>{{ strtoupper($article->topic?->country_code ?? 'ID') }}</span>
             </div>
             <p class="deck">{{ $article->excerpt }}</p>
+            @if (!empty($headerBanner))
+                @include('components.affiliate-banner', ['banner' => $headerBanner])
+            @endif
             @if ($coverImageUrl)
                 <img class="cover" src="{{ $coverImageUrl }}" alt="{{ $article->title }}" loading="eager">
             @endif
@@ -210,9 +227,7 @@
                                     @endif
                                 </div>
                                 @if (!empty($reference['url']))
-                                    <div style="margin-top:6px;">
-                                        <a href="{{ $reference['url'] }}" target="_blank" rel="nofollow noopener">{{ $reference['url'] }}</a>
-                                    </div>
+                                    <a class="reference-link" href="{{ $reference['url'] }}" target="_blank" rel="nofollow noopener">{{ $reference['url'] }}</a>
                                 @endif
                             </div>
                         @endforeach
@@ -220,8 +235,8 @@
                 </section>
             @endif
 
-            @if (!empty($affiliateSettings['disclosure']))
-                <p class="muted" style="margin-top:22px;">{{ $affiliateSettings['disclosure'] }}</p>
+            @if (!empty($footerBanner))
+                @include('components.affiliate-banner', ['banner' => $footerBanner])
             @endif
         </article>
     </div>
