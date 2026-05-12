@@ -58,6 +58,11 @@ return [
                 ])),
             ],
         ],
+        'reference_allowed_hosts' => array_values(array_filter(array_map(
+            static fn (string $host): string => trim(strtolower($host)),
+            explode(',', env('SEO_REFERENCE_ALLOWED_HOSTS', 'go.id,ac.id,edu,org,or.id,sch.id,who.int,un.org,developer.mozilla.org,php.net,laravel.com,cloud.google.com,developers.google.com,docs.github.com'))
+        ))),
+        'validate_reference_urls' => env('SEO_VALIDATE_REFERENCE_URLS', '1') === '1',
         'allowed_categories' => [
             'sports_training',
             'sports_places',

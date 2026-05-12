@@ -242,7 +242,7 @@ class SeoFactoryController extends Controller
             return [];
         }
 
-        return collect(preg_split('/\r\n|\r|\n/', $text) ?: [])
+        $references = collect(preg_split('/\r\n|\r|\n/', $text) ?: [])
             ->map(function (string $line): ?array {
                 $line = trim($line);
 
@@ -259,12 +259,14 @@ class SeoFactoryController extends Controller
                 return [
                     'title' => $title,
                     'publisher' => $publisher ?: null,
-                    'url' => filter_var((string) $url, FILTER_VALIDATE_URL) ? $url : null,
+                    'url' => $url ?: null,
                     'year' => $year ?: null,
                 ];
             })
             ->filter()
             ->values()
             ->all();
+
+        return $this->seoFactory->normalizeReferences($references);
     }
 }

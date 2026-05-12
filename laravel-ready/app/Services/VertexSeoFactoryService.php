@@ -7,6 +7,7 @@ use App\Models\ArticleTopic;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Throwable;
 use RuntimeException;
 
 class VertexSeoFactoryService
@@ -300,32 +301,40 @@ PROMPT;
 
     private function sanitizeReferences(mixed $references): array
     {
-        return collect(is_array($references) ? $references : [])
-            ->map(function ($reference): ?array {
-                if (! is_array($reference)) {
-                    return null;
-                }
+        return $this->normalizeReferences(is_array($references) ? $references : []);
+    }
 
-                $title = trim((string) ($reference['title'] ?? ''));
-                $publisher = trim((string) ($reference['publisher'] ?? ''));
-                $url = $this->extractValidUrl((string) ($reference['url'] ?? ''));
-                $year = trim((string) ($reference['year'] ?? ''));
-
-                if ($title === '' || ! $url) {
-                    return null;
-                }
-
-                return [
-                    'title' => $title,
-                    'publisher' => $publisher ?: null,
-                    'url' => $url,
-                    'year' => $year ?: null,
-                ];
-            })
+    public function normalizeReferences(array $references): array
+    {
+        return collect($references)
+            ->map(fn ($reference): ?array => $this->normalizeReference($reference))
             ->filter()
             ->take(4)
             ->values()
             ->all();
+    }
+
+    private function normalizeReference(mixed $reference): ?array
+    {
+        if (! is_array($reference)) {
+            return null;
+        }
+
+        $title = trim((string) ($reference['title'] ?? ''));
+        $publisher = trim((string) ($reference['publisher'] ?? ''));
+        $url = $this->extractValidUrl((string) ($reference['url'] ?? ''));
+        $year = trim((string) ($reference['year'] ?? ''));
+
+        if ($title === '' || ! $url) {
+            return null;
+        }
+
+        return [
+            'title' => $title,
+            'publisher' => $publisher ?: null,
+            'url' => $url,
+            'year' => $year ?: null,
+        ];
     }
 
     private function extractValidUrl(string $value): ?string
@@ -342,6 +351,65 @@ PROMPT;
 
         $url = rtrim($matches[0], '.,);');
 
-        return filter_var($url, FILTER_VALIDATE_URL) ? $url : null;
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! is_string($host) || ! $this->hostIsAllowed($host)) {
+            return null;
+        }
+
+        if (! config('portal.seo.validate_reference_urls', true)) {
+            return $url;
+        }
+
+        return $this->urlRespondsOk($url) ? $url : null;
+    }
+
+    private function hostIsAllowed(string $host): bool
+    {
+        $host = Str::lower($host);
+        $allowedHosts = config('portal.seo.reference_allowed_hosts', []);
+
+        foreach ($allowedHosts as $allowedHost) {
+            $allowedHost = Str::lower((string) $allowedHost);
+
+            if ($allowedHost === '') {
+                continue;
+            }
+
+            if ($host === $allowedHost || Str::endsWith($host, '.'.$allowedHost)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function urlRespondsOk(string $url): bool
+    {
+        try {
+            $response = Http::timeout(12)
+                ->withHeaders(['User-Agent' => 'SerbainfoBot/1.0'])
+                ->head($url);
+
+            if ($response->successful()) {
+                return true;
+            }
+
+            if (in_array($response->status(), [403, 405], true)) {
+                $fallback = Http::timeout(12)
+                    ->withHeaders(['User-Agent' => 'SerbainfoBot/1.0'])
+                    ->get($url);
+
+                return $fallback->successful();
+            }
+        } catch (Throwable) {
+            return false;
+        }
+
+        return false;
     }
 }
