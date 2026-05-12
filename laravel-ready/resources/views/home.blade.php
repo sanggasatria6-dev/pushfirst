@@ -18,23 +18,24 @@
         <link rel="apple-touch-icon" href="{{ $portalBranding['logo_url'] }}">
     @endif
     <script type="application/ld+json">
-        @json([
-            '@context' => 'https://schema.org',
-            '@graph' => array_values(array_filter([
-                [
-                    '@type' => 'WebSite',
-                    'name' => $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar'),
-                    'alternateName' => 'Serba Info',
-                    'url' => url('/'),
-                ],
-                [
-                    '@type' => 'Organization',
-                    'name' => $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar'),
-                    'url' => url('/'),
-                    'logo' => !empty($portalBranding['logo_url']) ? $portalBranding['logo_url'] : null,
-                ],
-            ])))
-        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": @json($portalBranding['site_name'] ?? config('app.name', 'Arena Nalar')),
+      "alternateName": "Serba Info",
+      "url": @json(url('/'))
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": @json($portalBranding['site_name'] ?? config('app.name', 'Arena Nalar')),
+      "url": @json(url('/'))
+      @if (!empty($portalBranding['logo_url']))
+      ,"logo": @json($portalBranding['logo_url'])
+      @endif
+    }
     </script>
     <style>
         :root {
