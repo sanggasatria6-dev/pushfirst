@@ -7,6 +7,15 @@
     <meta name="description" content="{{ $article->meta_description }}">
     <meta name="robots" content="index,follow">
     <link rel="canonical" href="{{ route('articles.show', $article) }}">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ $article->title }}">
+    <meta property="og:description" content="{{ $article->meta_description }}">
+    <meta property="og:url" content="{{ route('articles.show', $article) }}">
+    <meta property="og:site_name" content="{{ $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar') }}">
+    @if (!empty($portalBranding['logo_url']))
+        <link rel="icon" type="image/png" href="{{ $portalBranding['logo_url'] }}">
+        <link rel="apple-touch-icon" href="{{ $portalBranding['logo_url'] }}">
+    @endif
     <style>
         :root {
             --bg: #f8f6f1;

@@ -7,6 +7,35 @@
     <meta name="description" content="{{ $homepageSettings['hero_description'] ?? 'Portal editorial olahraga, IT, dan hidroponik.' }}">
     <meta name="robots" content="index,follow">
     <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar') }}">
+    <meta property="og:description" content="{{ $homepageSettings['hero_description'] ?? 'Portal editorial olahraga, IT, dan hidroponik.' }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:site_name" content="{{ $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar') }}">
+    @if (!empty($portalBranding['logo_url']))
+        <meta property="og:image" content="{{ $portalBranding['logo_url'] }}">
+        <link rel="icon" type="image/png" href="{{ $portalBranding['logo_url'] }}">
+        <link rel="apple-touch-icon" href="{{ $portalBranding['logo_url'] }}">
+    @endif
+    <script type="application/ld+json">
+        @json([
+            '@context' => 'https://schema.org',
+            '@graph' => array_values(array_filter([
+                [
+                    '@type' => 'WebSite',
+                    'name' => $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar'),
+                    'alternateName' => 'Serba Info',
+                    'url' => url('/'),
+                ],
+                [
+                    '@type' => 'Organization',
+                    'name' => $portalBranding['site_name'] ?? config('app.name', 'Arena Nalar'),
+                    'url' => url('/'),
+                    'logo' => !empty($portalBranding['logo_url']) ? $portalBranding['logo_url'] : null,
+                ],
+            ])))
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    </script>
     <style>
         :root {
             --bg: #f8f6f1;
